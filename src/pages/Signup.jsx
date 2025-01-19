@@ -12,18 +12,20 @@ import {
   ThemeProvider,
   createTheme,
 } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from "react-router";
 
 // Create a dark theme using Material-UI
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      main: "#90caf9", // Light Blue
+      main: "#90caf9",
     },
     background: {
-      default: "#121212", // Dark Background
-      paper: "#1e1e1e", // Darker Paper
+      default: "#121212",
+      paper: "#1e1e1e",
     },
     text: {
       primary: "#ffffff",
@@ -33,6 +35,7 @@ const darkTheme = createTheme({
 });
 
 const Signup = () => {
+    const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -42,7 +45,6 @@ const Signup = () => {
 
   // Validation Schema with Yup
   const validationSchema = Yup.object({
-    userName: Yup.string().required("User Name is required"),
     email: Yup.string()
       .email("Enter a valid email")
       .required("Email is required"),
@@ -56,16 +58,31 @@ const Signup = () => {
 
   const formik = useFormik({
     initialValues: {
-      userName: "",
       email: "",
       password: "",
       confirmPassword: "",
     },
     validationSchema,
     onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
+      const auth = getAuth();
+      createUserWithEmailAndPassword(auth, values.email, values.password)
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user;
+          console.log("userCredential" , userCredential)
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+        });
     },
   });
+
+  // Mouse Events for holding the password visibility
+  const handleMouseDownPassword = () => setShowPassword(true);
+  const handleMouseUpPassword = () => setShowPassword(false);
+  const handleMouseDownConfirmPassword = () => setShowConfirmPassword(true);
+  const handleMouseUpConfirmPassword = () => setShowConfirmPassword(false);
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -85,18 +102,6 @@ const Signup = () => {
           Signup
         </Typography>
         <form onSubmit={formik.handleSubmit}>
-          <TextField
-            variant="outlined"
-            label="User Name"
-            name="userName"
-            fullWidth
-            margin="normal"
-            value={formik.values.userName}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.userName && Boolean(formik.errors.userName)}
-            helperText={formik.touched.userName && formik.errors.userName}
-          />
           <TextField
             variant="outlined"
             label="Email"
@@ -125,10 +130,17 @@ const Signup = () => {
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
+                    onMouseDown={handleMouseDownPassword}
+                    onMouseUp={handleMouseUpPassword}
+                    onMouseLeave={handleMouseUpPassword} // To ensure hiding if the user drags away
                     edge="end"
+                    style={{ outline: "none" }}
                   >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                    <i
+                      className={`far ${
+                        showPassword ? "fa-eye-slash" : "fa-eye"
+                      }`}
+                    ></i>
                   </IconButton>
                 </InputAdornment>
               ),
@@ -155,12 +167,17 @@ const Signup = () => {
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
-                    onClick={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
-                    }
+                    onMouseDown={handleMouseDownConfirmPassword}
+                    onMouseUp={handleMouseUpConfirmPassword}
+                    onMouseLeave={handleMouseUpConfirmPassword}
                     edge="end"
+                    style={{ outline: "none" }}
                   >
-                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    <i
+                      className={`far ${
+                        showConfirmPassword ? "fa-eye-slash" : "fa-eye"
+                      }`}
+                    ></i>
                   </IconButton>
                 </InputAdornment>
               ),
