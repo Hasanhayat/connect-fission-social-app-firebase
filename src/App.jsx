@@ -1,11 +1,9 @@
-import { useState } from 'react'
 import './App.css'
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-
+import Links from './pages/Links';
 
 function App() {
-  const [count, setCount] = useState(0)
   const firebaseConfig = {
     apiKey: "AIzaSyBJe4DHOGbe8AZNW-f7c_rb3oKz-9Olt1g",
     authDomain: "connectfission.firebaseapp.com",
@@ -20,15 +18,9 @@ function App() {
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   return (
-    <>
-      <h1>ConnectFission</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-       <button>SignUp</button>
-      </div>
-    </>
+   <>
+   <Links />
+   </>
   )
 }
 
