@@ -74,6 +74,7 @@ const Signup = () => {
           const user = userCredential.user;
           console.log("userCredential", userCredential);
           setLoading(false);
+          navigate("/home");
         })
         .catch((error) => {
           setLoading(false);
@@ -192,14 +193,12 @@ const Signup = () => {
           />
           <Button type="submit" variant="contained" color="primary" fullWidth>
             {loading ? (
-                              <div
-                                style={{ height: "" }}
-                              >
-                                <CircularProgress size={20} color="white" />
-                              </div>
-                            ) : (
-                              "Signup"
-                            )}
+              <div style={{ height: "" }}>
+                <CircularProgress size={20} color="white" />
+              </div>
+            ) : (
+              "Signup"
+            )}
           </Button>
           <p className="account-msg">
             Already have an account? <Link to={"/login"}>Login</Link>

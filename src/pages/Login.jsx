@@ -17,8 +17,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./pages.css";
 import Loader from "./Loader";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { Link } from "react-router";
-
+import { Link, useNavigate } from "react-router";
 
 // Create a dark theme using Material-UI
 
@@ -40,6 +39,7 @@ const darkTheme = createTheme({
 });
 
 const Login = () => {
+  const navigate = useNavigate();
   useEffect(() => {
     document.title = "Login - ConnectFission";
   }, []);
@@ -66,22 +66,24 @@ const Login = () => {
     validationSchema,
     onSubmit: (values) => {
       const auth = getAuth();
-      setLoading(true)
+      setLoading(true);
       signInWithEmailAndPassword(auth, values.email, values.password)
         .then((userCredential) => {
-          // Signed in 
+          // Signed in
           const user = userCredential.user;
           // ...
-          setLoading(false)
+          navigate("/home");
+
+          setLoading(false);
         })
         .catch((error) => {
-          setLoading(false)
-          
+          setLoading(false);
+
           const errorCode = error.code;
           console.log(error);
-          
+
           const errorMessage = error.message;
-          formik.errors.email = errorMessage
+          formik.errors.email = errorMessage;
         });
     },
   });
@@ -90,7 +92,6 @@ const Login = () => {
   const handleMouseDownPassword = () => setShowPassword(true);
   const handleMouseUpPassword = () => setShowPassword(false);
 
-  
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
@@ -154,18 +155,16 @@ const Login = () => {
             }}
           />
           <Button type="submit" variant="contained" color="primary" fullWidth>
-          {loading ? (
-                  <div
-                    style={{ height: "" }}
-                  >
-                    <CircularProgress size={20} color="white" />
-                  </div>
-                ) : (
-                  "login"
-                )}
+            {loading ? (
+              <div style={{ height: "" }}>
+                <CircularProgress size={20} color="white" />
+              </div>
+            ) : (
+              "login"
+            )}
           </Button>
           <p className="account-msg">
-          Don't have an account? <Link to={"/signup"}>Sign Up</Link>
+            Don't have an account? <Link to={"/signup"}>Sign Up</Link>
           </p>
         </form>
       </Box>
