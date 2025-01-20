@@ -14,7 +14,8 @@ import {
 } from "@mui/material";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
+import Loader from "./Loader";
 
 // Create a dark theme using Material-UI
 const darkTheme = createTheme({
@@ -35,9 +36,10 @@ const darkTheme = createTheme({
 });
 
 const Signup = () => {
-    const navigate = useNavigate()
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     document.title = "Signup - ConnectFission";
@@ -65,13 +67,18 @@ const Signup = () => {
     validationSchema,
     onSubmit: (values) => {
       const auth = getAuth();
+      setLoading(true);
       createUserWithEmailAndPassword(auth, values.email, values.password)
         .then((userCredential) => {
           // Signed up
           const user = userCredential.user;
-          console.log("userCredential" , userCredential)
+          console.log("userCredential", userCredential);
+          setLoading(false);
         })
         .catch((error) => {
+          setLoading(false);
+          formik.errors.email = errorMessage;
+
           const errorCode = error.code;
           const errorMessage = error.message;
         });
@@ -184,8 +191,19 @@ const Signup = () => {
             }}
           />
           <Button type="submit" variant="contained" color="primary" fullWidth>
-            Signup
+            {loading ? (
+                              <div
+                                style={{ height: "" }}
+                              >
+                                <CircularProgress size={20} color="white" />
+                              </div>
+                            ) : (
+                              "Signup"
+                            )}
           </Button>
+          <p className="account-msg">
+            Already have an account? <Link to={"/login"}>Login</Link>
+          </p>
         </form>
       </Box>
     </ThemeProvider>
