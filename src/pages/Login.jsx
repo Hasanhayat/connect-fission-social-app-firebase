@@ -73,6 +73,7 @@ const Login = () => {
           const user = userCredential.user;
           // ...
           navigate("/home");
+          dispatch({ type: "USER_LOGIN", payload: user });
 
           setLoading(false);
         })
@@ -138,6 +139,8 @@ const Login = () => {
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
+                    onTouchStart={handleMouseDownPassword}
+                    onTouchEnd={handleMouseUpPassword}
                     onMouseDown={handleMouseDownPassword}
                     onMouseUp={handleMouseUpPassword}
                     onMouseLeave={handleMouseUpPassword} // To ensure hiding if the user drags away
