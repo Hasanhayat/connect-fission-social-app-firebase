@@ -44,7 +44,7 @@ const Welcome = () => {
   }, []);
   return (
     <>
-      <h1 id="typed"></h1>
+      <h1 id={(state.isLogin)? "typed":"noTyped"}>{(state.isLogin === false)? "Welcome to ConnectFission":""}</h1>
 
       {loading ? (
         <CircularProgress size={45} color="#B0BEC5" />
