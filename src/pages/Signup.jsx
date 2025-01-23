@@ -11,6 +11,7 @@ import {
   CssBaseline,
   ThemeProvider,
   createTheme,
+  CircularProgress,
 } from "@mui/material";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
@@ -47,6 +48,7 @@ const Signup = () => {
 
   // Validation Schema with Yup
   const validationSchema = Yup.object({
+    name: Yup.string().required("Enter Username"),
     email: Yup.string()
       .email("Enter a valid email")
       .required("Email is required"),
@@ -60,6 +62,7 @@ const Signup = () => {
 
   const formik = useFormik({
     initialValues: {
+      name: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -70,6 +73,14 @@ const Signup = () => {
       setLoading(true);
       createUserWithEmailAndPassword(auth, values.email, values.password)
         .then((userCredential) => {
+          //username sent 
+          updateProfile(auth.currentUser, {
+            displayName: values.name, photoURL: "https://example.com/jane-q-user/profile.jpg"
+          }).then(() => {
+            console.log("name sent");
+          }).catch((error) => {
+            console.log("nameErr",error);
+          });
           // Signed up
           const user = userCredential.user;
           console.log("userCredential", userCredential);
@@ -78,10 +89,11 @@ const Signup = () => {
         })
         .catch((error) => {
           setLoading(false);
-          formik.errors.email = errorMessage;
-
+          console.log(error.code);
           const errorCode = error.code;
           const errorMessage = error.message;
+
+          formik.errors.email = errorMessage;
         });
     },
   });
@@ -112,6 +124,18 @@ const Signup = () => {
         <form onSubmit={formik.handleSubmit}>
           <TextField
             variant="outlined"
+            label="Name"
+            name="name"
+            fullWidth
+            margin="normal"
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.name && Boolean(formik.errors.name)}
+            helperText={formik.touched.name && formik.errors.name}
+          />
+          <TextField
+            variant="outlined"
             label="Email"
             name="email"
             fullWidth
@@ -138,6 +162,8 @@ const Signup = () => {
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
+                    onTouchStart={handleMouseDownPassword}
+                    onTouchEnd={handleMouseUpPassword}
                     onMouseDown={handleMouseDownPassword}
                     onMouseUp={handleMouseUpPassword}
                     onMouseLeave={handleMouseUpPassword} // To ensure hiding if the user drags away
@@ -175,6 +201,8 @@ const Signup = () => {
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
+                  onTouchStart={handleMouseDownConfirmPassword}
+                  onTouchEnd={handleMouseUpConfirmPassword}
                     onMouseDown={handleMouseDownConfirmPassword}
                     onMouseUp={handleMouseUpConfirmPassword}
                     onMouseLeave={handleMouseUpConfirmPassword}
