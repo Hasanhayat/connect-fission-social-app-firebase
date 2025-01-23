@@ -56,6 +56,11 @@ const Welcome = () => {
                 Home
               </Link>
             </button>
+            <button>
+              <Link style={{ textDecoration: "none" }} to={"profile"}>
+                Profile
+              </Link>
+            </button>
           </div>
 
           <button style={{ margin: 20 }} onClick={logout}>

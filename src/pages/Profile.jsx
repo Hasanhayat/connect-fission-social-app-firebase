@@ -11,9 +11,17 @@ import {
   Tooltip,
   ThemeProvider,
   createTheme,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { Edit, Delete, Verified } from "@mui/icons-material";
-import { getAuth, sendEmailVerification, updateEmail, updateProfile, deleteUser } from "firebase/auth";
+import {
+  getAuth,
+  sendEmailVerification,
+  updateEmail,
+  updateProfile,
+  deleteUser,
+} from "firebase/auth";
 
 const darkTheme = createTheme({
   palette: {
@@ -24,13 +32,17 @@ const darkTheme = createTheme({
   },
 });
 
-const ProfilePage = () => {
+const Profile = () => {
   const auth = getAuth();
   const user = auth.currentUser;
-  const [profileImage, setProfileImage] = useState(user?.photoURL || "/src/assets/profileImg.png");
+  const [profileImage, setProfileImage] = useState(
+    user?.photoURL || "/src/assets/profileImg.png"
+  );
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [email, setEmail] = useState(user?.email || "");
-  const [isEmailVerified, setIsEmailVerified] = useState(user?.emailVerified || false);
+  const [isEmailVerified, setIsEmailVerified] = useState(
+    user?.emailVerified || false
+  );
   const [openModal, setOpenModal] = useState(false);
   const [editField, setEditField] = useState("");
 
@@ -48,33 +60,69 @@ const ProfilePage = () => {
   // Update Profile
   const handleUpdateProfile = () => {
     updateProfile(auth.currentUser, { displayName, photoURL: profileImage })
-      .then(() => alert("Profile updated successfully"))
+      .then(() => {
+        setAlertMsg("Profile updated successfully");
+        setShowAlert(true);
+      })
       .catch((error) => alert(error.message));
   };
 
   // Update Email
   const handleUpdateEmail = () => {
     updateEmail(auth.currentUser, email)
-      .then(() => alert("Email updated successfully"))
+      .then(() => {
+        setAlertMsg("Email updated successfully");
+        setShowAlert(true);
+      })
       .catch((error) => alert(error.message));
   };
 
   // Send Email Verification
   const handleSendVerification = () => {
     sendEmailVerification(auth.currentUser)
-      .then(() => alert("Verification email sent"))
+      .then(() => {
+        setAlertMsg("Verification email sent");
+        setShowAlert(true);
+      })
       .catch((error) => alert(error.message));
   };
 
   // Delete Account
   const handleDeleteAccount = () => {
     deleteUser(auth.currentUser)
-      .then(() => alert("Account deleted successfully"))
+      .then(() => {
+        setAlertMsg("Account deleted successfully");
+        setShowAlert(true);
+      })
       .catch((error) => alert(error.message));
   };
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMsg, setAlertMsg] = useState(false);
 
+  const alertClose = () => {
+    setShowAlert(false);
+  };
   return (
     <ThemeProvider theme={darkTheme}>
+      <Snackbar
+        open={showAlert}
+        autoHideDuration={2000}
+        onClose={alertClose}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        message="Added successfully"
+      >
+        <Alert
+          onClose={alertClose}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {alertMsg}
+        </Alert>
+      </Snackbar>
       <CssBaseline />
       <Box
         sx={{
@@ -88,7 +136,7 @@ const ProfilePage = () => {
         }}
       >
         <Typography variant="h5" align="center" mb={3}>
-          Profile Page
+          Profile
         </Typography>
         <Box display="flex" justifyContent="center" mb={3}>
           <Avatar
@@ -121,7 +169,7 @@ const ProfilePage = () => {
         {/* Profile Info */}
         <Box display="flex" alignItems="center" mb={2}>
           <Typography variant="body1" sx={{ flexGrow: 1 }}>
-            Name: {displayName || "Not set"}
+            <b> Name:</b> {displayName || "Not set"}
           </Typography>
           <IconButton onClick={() => handleOpenModal("name")}>
             <Edit />
@@ -129,7 +177,7 @@ const ProfilePage = () => {
         </Box>
         <Box display="flex" alignItems="center" mb={2}>
           <Typography variant="body1" sx={{ flexGrow: 1 }}>
-            Email: {email}
+            <b>Email:</b> {email}
           </Typography>
           {!isEmailVerified && (
             <Button
@@ -147,7 +195,7 @@ const ProfilePage = () => {
         </Box>
         <Box display="flex" alignItems="center" mb={2}>
           <Typography variant="body1" sx={{ flexGrow: 1 }}>
-            Email Verified: {isEmailVerified ? "Yes" : "No"}
+            {isEmailVerified ? <b>Email Verified</b> : <b>not verified</b>}
           </Typography>
           {isEmailVerified && <Verified color="success" />}
         </Box>
@@ -194,7 +242,9 @@ const ProfilePage = () => {
               color="primary"
               fullWidth
               onClick={() => {
-                editField === "name" ? handleUpdateProfile() : handleUpdateEmail();
+                editField === "name"
+                  ? handleUpdateProfile()
+                  : handleUpdateEmail();
                 handleCloseModal();
               }}
             >
@@ -207,5 +257,4 @@ const ProfilePage = () => {
   );
 };
 
-export default ProfilePage;
-3
+export default Profile;

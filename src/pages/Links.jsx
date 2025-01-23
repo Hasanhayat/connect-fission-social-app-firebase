@@ -5,6 +5,7 @@ import Signup from "./Signup";
 import Welcome from "./Welcome";
 import Home from "./Home"
 import { GlobalContext } from "../context/Context";
+import Profile from "./Profile";
 
 const Links = () => {
     const { state, dispatch, logout } = useContext(GlobalContext);
@@ -14,6 +15,7 @@ const Links = () => {
     <Routes>
       <Route path="/" element={<Welcome />} />
       <Route path="/home" element={<Home />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="*" element={<Navigate to={"/"} />} />
     </Routes>
     :
