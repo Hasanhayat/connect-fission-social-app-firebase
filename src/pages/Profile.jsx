@@ -21,6 +21,7 @@ import {
   updateEmail,
   updateProfile,
   deleteUser,
+  updatePassword,
 } from "firebase/auth";
 
 const darkTheme = createTheme({
@@ -40,6 +41,7 @@ const Profile = () => {
   );
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [email, setEmail] = useState(user?.email || "");
+  const [password, setPassword] = useState("");
   const [isEmailVerified, setIsEmailVerified] = useState(
     user?.emailVerified || false
   );
@@ -66,7 +68,17 @@ const Profile = () => {
       })
       .catch((error) => alert(error.message));
   };
+//update password
+const handleUpdatePassword = () => {
+    updatePassword(user, password).then(() => {
+        setAlertMsg("Password updated successfully");
+        setShowAlert(true);
 
+    }).catch((error) => {
+        alert(error.message)
+      });
+      
+}
   // Update Email
   const handleUpdateEmail = () => {
     updateEmail(auth.currentUser, email)
@@ -96,12 +108,17 @@ const Profile = () => {
       })
       .catch((error) => alert(error.message));
   };
+
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMsg, setAlertMsg] = useState(false);
+  const [alertMsg, setAlertMsg] = useState("");
 
   const alertClose = () => {
     setShowAlert(false);
   };
+
+  // Split email for line break
+  const emailParts = email.split("@");
+
   return (
     <ThemeProvider theme={darkTheme}>
       <Snackbar
@@ -112,7 +129,6 @@ const Profile = () => {
           vertical: "top",
           horizontal: "center",
         }}
-        message="Added successfully"
       >
         <Alert
           onClose={alertClose}
@@ -169,7 +185,7 @@ const Profile = () => {
         {/* Profile Info */}
         <Box display="flex" alignItems="center" mb={2}>
           <Typography variant="body1" sx={{ flexGrow: 1 }}>
-            <b> Name:</b> {displayName || "Not set"}
+            <b>Name:</b> {displayName || "Not set"}
           </Typography>
           <IconButton onClick={() => handleOpenModal("name")}>
             <Edit />
@@ -177,7 +193,11 @@ const Profile = () => {
         </Box>
         <Box display="flex" alignItems="center" mb={2}>
           <Typography variant="body1" sx={{ flexGrow: 1 }}>
-            <b>Email:</b> {email}
+            <b>Email:</b>
+            <span style={{ whiteSpace: "pre-wrap" }}>
+              {emailParts[0]}
+              <br />@{emailParts[1]}
+            </span>
           </Typography>
           {!isEmailVerified && (
             <Button
@@ -190,6 +210,14 @@ const Profile = () => {
             </Button>
           )}
           <IconButton onClick={() => handleOpenModal("email")}>
+            <Edit />
+          </IconButton>
+        </Box>
+        <Box display="flex" alignItems="center" mb={2}>
+          <Typography variant="body1" sx={{ flexGrow: 1 }}>
+            <b>Password:</b> ●●●●●●●●●
+          </Typography>
+          <IconButton onClick={() => handleOpenModal("Password")}>
             <Edit />
           </IconButton>
         </Box>
@@ -233,7 +261,13 @@ const Profile = () => {
                   ? setDisplayName(e.target.value)
                   : setEmail(e.target.value)
               }
-              label={editField === "name" ? "Name" : "Email"}
+              label={
+                editField === "name"
+                  ? "Name"
+                  : editField === "password"
+                  ? "password"
+                  : "Email"
+              }
               variant="outlined"
               margin="normal"
             />
@@ -244,6 +278,8 @@ const Profile = () => {
               onClick={() => {
                 editField === "name"
                   ? handleUpdateProfile()
+                  : editField === "password"
+                  ? handleUpdatePassword()
                   : handleUpdateEmail();
                 handleCloseModal();
               }}
