@@ -14,7 +14,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { Edit, Delete, Verified } from "@mui/icons-material";
+import { Edit, Verified } from "@mui/icons-material";
 import {
   getAuth,
   sendEmailVerification,
@@ -22,6 +22,8 @@ import {
   updateProfile,
   deleteUser,
   updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
 } from "firebase/auth";
 
 const darkTheme = createTheme({
@@ -48,6 +50,14 @@ const Profile = () => {
   const [openModal, setOpenModal] = useState(false);
   const [editField, setEditField] = useState("");
 
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMsg, setAlertMsg] = useState("");
+  const [alertType, setAlertType] = useState("success");
+
+  const alertClose = () => {
+    setShowAlert(false);
+  };
+
   // Modal Handler
   const handleOpenModal = (field) => {
     setEditField(field);
@@ -64,29 +74,56 @@ const Profile = () => {
     updateProfile(auth.currentUser, { displayName, photoURL: profileImage })
       .then(() => {
         setAlertMsg("Profile updated successfully");
+        setAlertType("success");
         setShowAlert(true);
       })
-      .catch((error) => alert(error.message));
-  };
-//update password
-const handleUpdatePassword = () => {
-    updatePassword(user, password).then(() => {
-        setAlertMsg("Password updated successfully");
+      .catch((error) => {
+        setAlertMsg(error.message);
+        setAlertType("error");
         setShowAlert(true);
-
-    }).catch((error) => {
-        alert(error.message)
       });
-      
-}
+  };
+
+  // Update Password
+  const handleUpdatePassword = () => {
+    if (password.length < 8) {
+      setAlertMsg("Password must be at least 8 characters long");
+      setAlertType("error");
+      setShowAlert(true);
+      return;
+    }
+
+    const credential = EmailAuthProvider.credential(user.email, password);
+
+    reauthenticateWithCredential(user, credential)
+      .then(() => {
+        return updatePassword(user, password);
+      })
+      .then(() => {
+        setAlertMsg("Password updated successfully");
+        setAlertType("success");
+        setShowAlert(true);
+      })
+      .catch((error) => {
+        setAlertMsg(error.message);
+        setAlertType("error");
+        setShowAlert(true);
+      });
+  };
+
   // Update Email
   const handleUpdateEmail = () => {
     updateEmail(auth.currentUser, email)
       .then(() => {
         setAlertMsg("Email updated successfully");
+        setAlertType("success");
         setShowAlert(true);
       })
-      .catch((error) => alert(error.message));
+      .catch((error) => {
+        setAlertMsg(error.message);
+        setAlertType("error");
+        setShowAlert(true);
+      });
   };
 
   // Send Email Verification
@@ -94,9 +131,14 @@ const handleUpdatePassword = () => {
     sendEmailVerification(auth.currentUser)
       .then(() => {
         setAlertMsg("Verification email sent");
+        setAlertType("success");
         setShowAlert(true);
       })
-      .catch((error) => alert(error.message));
+      .catch((error) => {
+        setAlertMsg(error.message);
+        setAlertType("error");
+        setShowAlert(true);
+      });
   };
 
   // Delete Account
@@ -104,19 +146,16 @@ const handleUpdatePassword = () => {
     deleteUser(auth.currentUser)
       .then(() => {
         setAlertMsg("Account deleted successfully");
+        setAlertType("success");
         setShowAlert(true);
       })
-      .catch((error) => alert(error.message));
+      .catch((error) => {
+        setAlertMsg(error.message);
+        setAlertType("error");
+        setShowAlert(true);
+      });
   };
 
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMsg, setAlertMsg] = useState("");
-
-  const alertClose = () => {
-    setShowAlert(false);
-  };
-
-  // Split email for line break
   const emailParts = email.split("@");
 
   return (
@@ -132,7 +171,7 @@ const handleUpdatePassword = () => {
       >
         <Alert
           onClose={alertClose}
-          severity="success"
+          severity={alertType}
           variant="filled"
           sx={{ width: "100%" }}
         >
@@ -183,7 +222,12 @@ const handleUpdatePassword = () => {
         </Box>
 
         {/* Profile Info */}
-        <Box display="flex" alignItems="center" mb={2}>
+        <Box
+          display="flex"
+          alignItems="center"
+          mb={2}
+          sx={{ borderBottom: "1px solid #ccc", pb: 1 }}
+        >
           <Typography variant="body1" sx={{ flexGrow: 1 }}>
             <b>Name:</b> {displayName || "Not set"}
           </Typography>
@@ -191,7 +235,12 @@ const handleUpdatePassword = () => {
             <Edit />
           </IconButton>
         </Box>
-        <Box display="flex" alignItems="center" mb={2}>
+        <Box
+          display="flex"
+          alignItems="center"
+          mb={2}
+          sx={{ borderBottom: "1px solid #ccc", pb: 1 }}
+        >
           <Typography variant="body1" sx={{ flexGrow: 1 }}>
             <b>Email:</b>
             <span style={{ whiteSpace: "pre-wrap" }}>
@@ -213,11 +262,16 @@ const handleUpdatePassword = () => {
             <Edit />
           </IconButton>
         </Box>
-        <Box display="flex" alignItems="center" mb={2}>
+        <Box
+          display="flex"
+          alignItems="center"
+          mb={2}
+          sx={{ borderBottom: "1px solid #ccc", pb: 1 }}
+        >
           <Typography variant="body1" sx={{ flexGrow: 1 }}>
             <b>Password:</b> ●●●●●●●●●
           </Typography>
-          <IconButton onClick={() => handleOpenModal("Password")}>
+          <IconButton onClick={() => handleOpenModal("password")}>
             <Edit />
           </IconButton>
         </Box>
@@ -251,21 +305,35 @@ const handleUpdatePassword = () => {
             }}
           >
             <Typography variant="h6" mb={2}>
-              Edit {editField === "name" ? "Name" : "Email"}
+              Edit{" "}
+              {editField === "name"
+                ? "Name"
+                : editField === "password"
+                ? "Password"
+                : "Email"}
             </Typography>
             <TextField
               fullWidth
-              value={editField === "name" ? displayName : email}
+              type={editField === "password" ? "password" : "text"}
+              value={
+                editField === "name"
+                  ? displayName
+                  : editField === "password"
+                  ? password
+                  : email
+              }
               onChange={(e) =>
                 editField === "name"
                   ? setDisplayName(e.target.value)
+                  : editField === "password"
+                  ? setPassword(e.target.value)
                   : setEmail(e.target.value)
               }
               label={
                 editField === "name"
                   ? "Name"
                   : editField === "password"
-                  ? "password"
+                  ? "Password"
                   : "Email"
               }
               variant="outlined"
@@ -276,6 +344,12 @@ const handleUpdatePassword = () => {
               color="primary"
               fullWidth
               onClick={() => {
+                if (editField === "password" && password.length < 8) {
+                  setAlertMsg("Password must be at least 8 characters long");
+                  setAlertType("error");
+                  setShowAlert(true);
+                  return;
+                }
                 editField === "name"
                   ? handleUpdateProfile()
                   : editField === "password"

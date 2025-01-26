@@ -104,36 +104,34 @@ const Login = () => {
     setForgetEmail("");
   };
 
-
   const [showAlert, setShowAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState(false);
   const [alertType, setAlertType] = useState("success");
 
   const alertClose = () => {
     setShowAlert(false);
-    setAlertMsg("")
+    setAlertMsg("");
   };
   const forgetPassword = () => {
-    const auth = getAuth()
+    const auth = getAuth();
     sendPasswordResetEmail(auth, forgetEmail)
-    .then(() => {
+      .then(() => {
         // Password reset email sent!
-        setAlertType("success")
+        setAlertType("success");
         setAlertMsg("Forget Email Sent");
         setShowAlert(true);
-        handleForget()
+        handleForget();
         // ..
-    })
-    .catch((error) => {
+      })
+      .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
-        setAlertType("error")
+        setAlertType("error");
         setAlertMsg(errorMessage);
         setShowAlert(true);
         // ..
-    });
-}
-  
+      });
+  };
 
   // Mouse Events for holding the password visibility
   const handleMouseDownPassword = () => setShowPassword(true);

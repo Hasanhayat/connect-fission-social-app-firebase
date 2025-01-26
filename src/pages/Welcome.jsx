@@ -20,10 +20,9 @@ const Welcome = () => {
         ],
         typeSpeed: 60,
         backSpeed: 70,
-        cursorChar: '',
-
+        cursorChar: "",
       });
-    }, 900);
+    }, 1000);
 
     setLoading(true);
     onAuthStateChanged(auth, (user) => {
@@ -44,7 +43,9 @@ const Welcome = () => {
   }, []);
   return (
     <>
-      <h1 id={(state.isLogin)? "typed":"noTyped"}>{(state.isLogin === false)? "Welcome to ConnectFission":""}</h1>
+      <h1 id={state.isLogin ? "typed" : "noTyped"}>
+        {state.isLogin === false ? "Welcome to ConnectFission" : ""}
+      </h1>
 
       {loading ? (
         <CircularProgress size={45} color="#B0BEC5" />
