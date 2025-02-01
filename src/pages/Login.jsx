@@ -25,6 +25,8 @@ import {
   signInWithEmailAndPassword,
   GithubAuthProvider,
   signInWithPopup,
+  FacebookAuthProvider,
+  GoogleAuthProvider,
 } from "firebase/auth";
 import { Link, useNavigate } from "react-router";
 
@@ -155,7 +157,7 @@ const Login = () => {
         const token = credential.accessToken;
     
         // The signed-in user info.
-        const user = result.user;
+        const user = result.user;        
         // IdP data available using getAdditionalUserInfo(result)
         // ...
       }).catch((error) => {
@@ -167,6 +169,9 @@ const Login = () => {
         // The AuthCredential type that was used.
         const credential = GithubAuthProvider.credentialFromError(error);
         // ...
+        setAlertType("error");
+        setAlertMsg(errorMessage);
+        setShowAlert(true);        
       });
     
   }
@@ -271,6 +276,22 @@ const Login = () => {
             Don't have an account? <Link to={"/signup"}>Sign Up</Link>
           </p>
         </form>
+
+        <hr width={250} size={1} />
+
+         {/* Social Login Buttons */}
+         <Box mt={2}>
+          <Button variant="contained" fullWidth sx={{ mt: 1, backgroundColor: "#DB4437" }} onClick={() => loginWithProvider(googleProvider)}>
+            <i className="fab fa-google" style={{ marginRight: 8 }}></i> Login with Google
+          </Button>
+          <Button variant="contained" fullWidth sx={{ mt: 1, backgroundColor: "#3b5998" }} onClick={() => loginWithProvider(facebookProvider)}>
+            <i className="fab fa-facebook" style={{ marginRight: 8 }}></i> Login with Facebook
+          </Button>
+          <Button variant="contained" fullWidth sx={{ mt: 1, backgroundColor: "#333" }} onClick={() => loginWithProvider(githubProvider)}>
+            <i className="fab fa-github" style={{ marginRight: 8 }}></i> Login with GitHub
+          </Button>
+        </Box>
+
       </Box>
       <Modal open={openModal} onClose={handleForget}>
         <Box
