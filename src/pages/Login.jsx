@@ -144,6 +144,9 @@ const Login = () => {
   //providers
 
   const githubProvider = new GithubAuthProvider();
+  const googleProvider = new GoogleAuthProvider();
+  const facebookProvider = new FacebookAuthProvider();
+
 
   //login with github
 
