@@ -1,4 +1,4 @@
-import { useContext, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import {
   Container,
   Typography,
@@ -43,27 +43,50 @@ const theme = createTheme({
 })
 
 const Home = () => {
+
+  const [posts, setPosts] = useState([])
+
+  useEffect(() => {
+    document.title = "Home - ConnectFission";
+
+    const getAllData = async() => {
+      const querySnapshot = await getDocs(collection(db, "posts"));
+      querySnapshot.forEach((doc) => {
+        console.log(`${doc.id} =>`, doc.data());
+        setPosts((prev) => [...prev, doc.data()])
+      });
+    }
+
+    getAllData();
+  } , []);
   const db = getFirestore();
 
   const { state, dispatch, logout } = useContext(GlobalContext);
   const [newPost, setNewPost] = useState("")
-  const [posts, setPosts] = useState([
-    { id: 1, author: "Alice", content: "Just finished a great book! 📚", likes: 15 },
-    { id: 2, author: "Bob", content: "Check out this amazing sunset! 🌅", likes: 32 },
-    { id: 3, author: "Charlie", content: "New personal best in my marathon training! 🏃‍♂️", likes: 24 },
-  ])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!newPost.trim()) return
-    const newPostObj = {
-      id: posts.length + 1,
-      author: state.user.displayName,
-      content: newPost,
-      likes: 0,
+    // if (!newPost.trim()) return
+    // const newPostObj = {
+    //   id: posts.length + 1,
+    //   author: state.user.displayName,
+    //   content: newPost,
+    //   likes: 0,
+    // }
+    try {
+      const docRef = await addDoc(collection(db, "posts"), {
+        userId: state?.user?.uid,
+        caption: newPost,
+        authorName: state?.user?.displayName,
+        authorProfile: state?.user?.photoURL,
+        postDate: new Date()
+      });
+      console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
     }
-    setPosts([newPostObj, ...posts])
-    setNewPost("")
+    
+       setNewPost("")
   }
 
   const handleLike = (id) => {
@@ -109,23 +132,23 @@ const Home = () => {
 
         <Grid container spacing={4}>
           {posts.map((post) => (
-            <Grid item xs={12} key={post.id}>
+            <Grid item xs={12} key={post.userId}>
               <Paper sx={{ p: 3, borderRadius: 2, bgcolor: "background.paper" }}>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                  <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>{post.author[0]}</Avatar>
+                  <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>{post.authorProfile}</Avatar>
                   <Typography variant="subtitle1" fontWeight="bold">
                     {post.author}
                   </Typography>
                 </Box>
                 <Typography variant="body1" paragraph>
-                  {post.content}
+                  {post.caption}
                 </Typography>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Typography variant="body2" color="text.secondary">
-                    {post.likes} likes
+                    {/* {post.likes} likes */}
                   </Typography>
                   <Box>
-                    <IconButton onClick={() => handleLike(post.id)} color="primary">
+                    <IconButton onClick={() => handleLike(post.userId)} color="primary">
                       <Favorite />
                     </IconButton>
                     <IconButton color="primary">
