@@ -53,7 +53,7 @@ const Home = () => {
   const getAllData = async() => {
     const querySnapshot = await getDocs(collection(db, "posts"));
     querySnapshot.forEach((doc) => {
-      console.log(`${doc.id} =>`, doc.data());
+      // console.log(`${doc.id} =>`, doc.data());
       setPosts((prev) => [...prev, doc.data()])
     });
   }
