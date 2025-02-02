@@ -171,7 +171,7 @@ const Home = () => {
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                   <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}><img src={post.authorProfile} width={40} height={40} alt="profile" /></Avatar>
                   <Typography variant="subtitle1" fontWeight="bold">
-                    {post.author}
+                    {post.authorName}
                   </Typography>
                 </Box>
                 <Typography variant="body1" paragraph>
