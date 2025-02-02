@@ -14,6 +14,8 @@ import {
   createTheme,
   ThemeProvider,
   CssBaseline,
+  Alert,
+  Snackbar,
 } from "@mui/material"
 import { Send as SendIcon, Favorite, Comment, Share } from "@mui/icons-material"
 import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
@@ -45,24 +47,23 @@ const theme = createTheme({
 const Home = () => {
 
   const [posts, setPosts] = useState([])
-
-  useEffect(() => {
-    document.title = "Home - ConnectFission";
-
-    const getAllData = async() => {
-      const querySnapshot = await getDocs(collection(db, "posts"));
-      querySnapshot.forEach((doc) => {
-        console.log(`${doc.id} =>`, doc.data());
-        setPosts((prev) => [...prev, doc.data()])
-      });
-    }
-
-    getAllData();
-  } , []);
-  const db = getFirestore();
-
   const { state, dispatch, logout } = useContext(GlobalContext);
   const [newPost, setNewPost] = useState("")
+
+  const getAllData = async() => {
+    const querySnapshot = await getDocs(collection(db, "posts"));
+    querySnapshot.forEach((doc) => {
+      console.log(`${doc.id} =>`, doc.data());
+      setPosts((prev) => [...prev, doc.data()])
+    });
+  }
+  useEffect(() => {
+    document.title = "Home - ConnectFission";
+    getAllData();
+  } , []);
+
+  const db = getFirestore();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -81,21 +82,53 @@ const Home = () => {
         authorProfile: state?.user?.photoURL,
         postDate: new Date()
       });
+      setAlertType("success");
+      setAlertMsg("posted");
+      setShowAlert(true);
+      setPosts([])
+      getAllData();
       console.log("Document written with ID: ", docRef.id);
     } catch (e) {
       console.error("Error adding document: ", e);
     }
-    
-       setNewPost("")
+
+    setNewPost("")
   }
 
-  const handleLike = (id) => {
-    setPosts(posts.map((post) => (post.id === id ? { ...post, likes: post.likes + 1 } : post)))
-  }
+  // const handleLike = (id) => {
+  //   setPosts(posts.map((post) => (post.id === id ? { ...post, likes: post.likes + 1 } : post)))
+  // }
 
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMsg, setAlertMsg] = useState(false);
+  const [alertType, setAlertType] = useState("");
+
+  const alertClose = () => {
+    setShowAlert(false);
+    setAlertMsg("");
+  };
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <Snackbar
+              open={showAlert}
+              autoHideDuration={2000}
+              onClose={alertClose}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "center",
+              }}
+              message="Added successfully"
+            >
+              <Alert
+                onClose={alertClose}
+                severity={alertType}
+                variant="filled"
+                sx={{ width: "100%" }}
+              >
+                {alertMsg}
+              </Alert>
+            </Snackbar>
       <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
           ConnectFission
@@ -131,11 +164,11 @@ const Home = () => {
         </Card>
 
         <Grid container spacing={4}>
-          {posts.map((post) => (
-            <Grid item xs={12} key={post.userId}>
+          {posts.map((post, id) => (
+            <Grid item xs={12} key={id}>
               <Paper sx={{ p: 3, borderRadius: 2, bgcolor: "background.paper" }}>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                  <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>{post.authorProfile}</Avatar>
+                  <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}><img src={post.authorProfile} width={40} height={40} alt="profile" /></Avatar>
                   <Typography variant="subtitle1" fontWeight="bold">
                     {post.author}
                   </Typography>
