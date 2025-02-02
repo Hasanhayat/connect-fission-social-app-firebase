@@ -137,7 +137,7 @@ const Home = () => {
         <Card sx={{ mb: 4, borderRadius: 2, bgcolor: "background.paper" }}>
           <CardContent>
             <Box sx={{ display: "flex", alignItems: "flex-start", mb: 2 }}>
-              <Avatar sx={{ mr: 2, bgcolor: "secondary.main" }}>Y</Avatar>
+              <Avatar sx={{ mr: 2, bgcolor: "secondary.main" }}><img src={state?.user?.photoURL} width={40} height={40} alt="profile" /></Avatar>
               <form onSubmit={handleSubmit} style={{ width: "100%" }}>
                 <TextField
                   fullWidth
