@@ -8,21 +8,20 @@ import Typed from "typed.js";
 const Welcome = () => {
   const { state, dispatch, logout } = useContext(GlobalContext);
   const [loading, setLoading] = useState(false);
-
+  const type = () => {
+    var typed = new Typed("#typed", {
+      strings: [
+        `Hi,<i>${auth?.currentUser?.displayName}</i>`,
+        `Welcome to ConnectFission`,
+      ],
+      typeSpeed: 60,
+      backSpeed: 70,
+      cursorChar: "",
+    });
+  };
   const auth = getAuth();
   useEffect(() => {
     document.title = "Welcome - ConnectFission";
-    setTimeout(() => {
-      var typed = new Typed("#typed", {
-        strings: [
-          `Hi,<i>${auth?.currentUser?.displayName}</i>`,
-          `Welcome to ConnectFission`,
-        ],
-        typeSpeed: 60,
-        backSpeed: 70,
-        cursorChar: "",
-      });
-    }, 1000);
 
     setLoading(true);
     onAuthStateChanged(auth, (user) => {
@@ -32,6 +31,7 @@ const Welcome = () => {
         const uid = user.uid;
         setLoading(false);
         // ...
+        type()
       } else {
         // User is signed out
         // ...
@@ -43,7 +43,7 @@ const Welcome = () => {
   }, []);
   return (
     <>
-      <h1 id={state.isLogin ? "typed" : "noTyped"}>
+      <h1 id="typed">
         {state.isLogin === false ? "Welcome to ConnectFission" : ""}
       </h1>
 
