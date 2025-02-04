@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react";
 import {
   Container,
   Typography,
@@ -16,13 +16,16 @@ import {
   CssBaseline,
   Alert,
   Snackbar,
-} from "@mui/material"
-import { Send as SendIcon, Favorite, Comment, Share } from "@mui/icons-material"
-import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
+} from "@mui/material";
+import {
+  Send as SendIcon,
+  Favorite,
+  Comment,
+  Share,
+} from "@mui/icons-material";
+import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
 import { GlobalContext } from "../context/Context";
 import moment from "moment";
-
-
 
 // Custom theme
 const theme = createTheme({
@@ -42,40 +45,38 @@ const theme = createTheme({
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
   },
-})
+});
 
 const Home = () => {
-
-  const [posts, setPosts] = useState([])
+  const [posts, setPosts] = useState([]);
   const { state, dispatch, logout } = useContext(GlobalContext);
-  const [newPost, setNewPost] = useState("")
+  const [newPost, setNewPost] = useState("");
 
-  const getAllData = async() => {
-    setPosts([])
+  const getAllData = async () => {
+    setPosts([]);
     const querySnapshot = await getDocs(collection(db, "posts"));
     querySnapshot.forEach((doc) => {
       // console.log(`${doc.id} =>`, doc.data());
-      setPosts((prev) => [...prev, doc.data()])
+      setPosts((prev) => [...prev, doc.data()]);
     });
-  }
+  };
   useEffect(() => {
-    console.log(state)
+    console.log(state);
     document.title = "Home - ConnectFission";
     getAllData();
-  } , []);
+  }, []);
 
   const db = getFirestore();
 
-
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
       const docRef = await addDoc(collection(db, "posts"), {
         userId: state?.user?.uid,
         caption: newPost,
         authorName: state?.user?.displayName,
         authorProfile: state?.user?.photoURL,
-        postDate: new Date()
+        postDate: new Date(),
       });
       setAlertType("success");
       setAlertMsg("posted");
@@ -85,8 +86,8 @@ const Home = () => {
     } catch (e) {
       console.error("Error adding document: ", e);
     }
-    setNewPost("")
-  }
+    setNewPost("");
+  };
 
   // const handleLike = (id) => {
   //   setPosts(posts.map((post) => (post.id === id ? { ...post, likes: post.likes + 1 } : post)))
@@ -100,38 +101,61 @@ const Home = () => {
     setShowAlert(false);
     setAlertMsg("");
   };
-  
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Snackbar
-              open={showAlert}
-              autoHideDuration={2000}
-              onClose={alertClose}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "center",
-              }}
-              message="Added successfully"
-            >
-              <Alert
-                onClose={alertClose}
-                severity={alertType}
-                variant="filled"
-                sx={{ width: "100%" }}
-              >
-                {alertMsg}
-              </Alert>
-            </Snackbar>
+        open={showAlert}
+        autoHideDuration={2000}
+        onClose={alertClose}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        message="Added successfully"
+      >
+        <Alert
+          onClose={alertClose}
+          severity={alertType}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {alertMsg}
+        </Alert>
+      </Snackbar>
       <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}
+        >
           ConnectFission
         </Typography>
 
         <Card sx={{ mb: 4, borderRadius: 2, bgcolor: "background.paper" }}>
           <CardContent>
-            <Box sx={{ display: "flex", alignItems: "flex-start", mb: 2 }}>
-              <Avatar sx={{ mr: 2, bgcolor: "secondary.main" }}><img src={state?.user?.photoURL} width={40} height={40} alt="CF" /></Avatar>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "flex-start",
+                mb: 2,
+                border: "1px solid #333",
+              }}
+            >
+              <Avatar sx={{ mr: 2, bgcolor: "secondary.main" }}>
+                {state.user.photoURL ? (
+                  <img
+                    src={state.user.photoURL}
+                    width={40}
+                    height={40}
+                    alt={state.user?.displayName.charAt(0).toUpperCase()}
+                  />
+                ) : (
+                  state.user?.displayName.charAt(0).toUpperCase()
+                )}
+              </Avatar>
               <form onSubmit={handleSubmit} style={{ width: "100%" }}>
                 <TextField
                   fullWidth
@@ -160,22 +184,56 @@ const Home = () => {
         <Grid container spacing={4}>
           {posts.map((post, id) => (
             <Grid item xs={12} key={id}>
-              <Paper sx={{ p: 3, borderRadius: 2, bgcolor: "background.paper" }}>
+              <Paper
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  bgcolor: "background.paper",
+                  border: "1px solid #333",
+                }}
+              >
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                  <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}><img src={post.authorProfile} width={40} height={40} alt="profile" /></Avatar>
+                  <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>
+                    {post.authorProfile ? (
+                      <img
+                        src={post.authorProfile}
+                        width={40}
+                        height={40}
+                        alt={post.authorName?.charAt(0).toUpperCase()}
+                      />
+                    ) : (
+                      post.authorName?.charAt(0).toUpperCase()
+                    )}
+                  </Avatar>
                   <Typography variant="subtitle1" fontWeight="bold">
                     {post.authorName}
                   </Typography>
                 </Box>
-                <Typography variant="body1" paragraph>
+                <Typography
+                  variant="body1"
+                  sx={{ color: "#B0BEC5", fontWeight: "bold" }}
+                  paragraph
+                >
                   {post.caption}
                 </Typography>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {/* {post.likes} likes */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="caption" sx={{ color: "gray" }}>
+                    {moment(post.postDate.toDate()).fromNow()}
                   </Typography>
+                  {/* <Typography variant="body2" color="text.secondary">
+                    {post.likes} likes
+                  </Typography> */}
                   <Box>
-                    <IconButton onClick={() => handleLike(post.userId)} color="primary">
+                    <IconButton
+                      onClick={() => handleLike(post.userId)}
+                      color="primary"
+                    >
                       <Favorite />
                     </IconButton>
                     <IconButton color="primary">
@@ -192,8 +250,7 @@ const Home = () => {
         </Grid>
       </Container>
     </ThemeProvider>
-  )
-}
+  );
+};
 
-export default Home
-
+export default Home;

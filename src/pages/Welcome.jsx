@@ -33,7 +33,7 @@ const Welcome = () => {
         const uid = user.uid;
         setLoading(false);
         // ...
-        type()
+        type();
       } else {
         // User is signed out
         // ...
@@ -72,25 +72,23 @@ const Welcome = () => {
         </>
       ) : (
         <>
-        <div className="card">
-          <button>
-            <Link style={{ textDecoration: "none" }} to={"signup"}>
-              SignUp
-            </Link>
-          </button>
+          <div className="card">
+            <button>
+              <Link style={{ textDecoration: "none" }} to={"signup"}>
+                SignUp
+              </Link>
+            </button>
 
-          <button>
-            <Link style={{ textDecoration: "none" }} to={"login"}>
-              Login
-            </Link>
-          </button>
-        </div>
+            <button>
+              <Link style={{ textDecoration: "none" }} to={"login"}>
+                Login
+              </Link>
+            </button>
+          </div>
         </>
       )}
 
-      {(!loading)?<DemoPosts />:null}
-
-      
+      {!loading ? <DemoPosts /> : null}
     </div>
   );
 };

@@ -3,22 +3,21 @@ import { Navigate, Route, Routes } from "react-router";
 import Login from "./Login";
 import Signup from "./Signup";
 import Welcome from "./Welcome";
-import Home from "./Home"
+import Home from "./Home";
 import { GlobalContext } from "../context/Context";
 import Profile from "./Profile";
 
 const Links = () => {
-    const { state, dispatch, logout } = useContext(GlobalContext);
-  
-  return (
-(state.isLogin)?
+  const { state, dispatch, logout } = useContext(GlobalContext);
+
+  return state.isLogin ? (
     <Routes>
       <Route path="/" element={<Welcome />} />
       <Route path="/home" element={<Home />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="*" element={<Navigate to={"/"} />} />
     </Routes>
-    :
+  ) : (
     <Routes>
       <Route path="/" element={<Welcome />} />
       <Route path="/login" element={<Login />} />

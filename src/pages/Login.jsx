@@ -30,7 +30,6 @@ import {
 } from "firebase/auth";
 import { Link, useNavigate } from "react-router";
 
-
 // Create a dark theme using Material-UI
 
 const darkTheme = createTheme({
@@ -147,9 +146,7 @@ const Login = () => {
   const googleProvider = new GoogleAuthProvider();
   const facebookProvider = new FacebookAuthProvider();
 
-
   //login with github
-
 
   const loginWithProvider = (provider) => {
     const auth = getAuth();
@@ -158,12 +155,13 @@ const Login = () => {
         // This gives you a GitHub Access Token. You can use it to access the GitHub API.
         const credential = GithubAuthProvider.credentialFromResult(result);
         const token = credential.accessToken;
-    
+
         // The signed-in user info.
-        const user = result.user;        
+        const user = result.user;
         // IdP data available using getAdditionalUserInfo(result)
         // ...
-      }).catch((error) => {
+      })
+      .catch((error) => {
         // Handle Errors here.
         const errorCode = error.code;
         const errorMessage = error.message;
@@ -174,11 +172,9 @@ const Login = () => {
         // ...
         setAlertType("error");
         setAlertMsg(errorMessage);
-        setShowAlert(true);        
+        setShowAlert(true);
       });
-    
-  }
-
+  };
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -282,19 +278,36 @@ const Login = () => {
 
         <hr width={250} size={1} />
 
-         {/* Social Login Buttons */}
-         <Box mt={2}>
-          <Button variant="contained" fullWidth sx={{ mt: 1, backgroundColor: "#DB4437" }} onClick={() => loginWithProvider(googleProvider)}>
-            <i className="fab fa-google" style={{ marginRight: 8 }}></i> Login with Google
+        {/* Social Login Buttons */}
+        <Box mt={2}>
+          <Button
+            variant="contained"
+            fullWidth
+            sx={{ mt: 1, backgroundColor: "#DB4437" }}
+            onClick={() => loginWithProvider(googleProvider)}
+          >
+            <i className="fab fa-google" style={{ marginRight: 8 }}></i> Login
+            with Google
           </Button>
-          <Button variant="contained" fullWidth sx={{ mt: 1, backgroundColor: "#3b5998" }} onClick={() => loginWithProvider(facebookProvider)}>
-            <i className="fab fa-facebook" style={{ marginRight: 8 }}></i> Login with Facebook
+          <Button
+            variant="contained"
+            fullWidth
+            sx={{ mt: 1, backgroundColor: "#3b5998" }}
+            onClick={() => loginWithProvider(facebookProvider)}
+          >
+            <i className="fab fa-facebook" style={{ marginRight: 8 }}></i> Login
+            with Facebook
           </Button>
-          <Button variant="contained" fullWidth sx={{ mt: 1, backgroundColor: "#333" }} onClick={() => loginWithProvider(githubProvider)}>
-            <i className="fab fa-github" style={{ marginRight: 8 }}></i> Login with GitHub
+          <Button
+            variant="contained"
+            fullWidth
+            sx={{ mt: 1, backgroundColor: "#333" }}
+            onClick={() => loginWithProvider(githubProvider)}
+          >
+            <i className="fab fa-github" style={{ marginRight: 8 }}></i> Login
+            with GitHub
           </Button>
         </Box>
-
       </Box>
       <Modal open={openModal} onClose={handleForget}>
         <Box

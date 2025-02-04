@@ -182,7 +182,7 @@ const Profile = () => {
       <Box
         sx={{
           maxWidth: 500,
-          width:350,
+          width: 350,
           mx: "auto",
           mt: 4,
           p: 3,

@@ -14,9 +14,13 @@ import {
   CircularProgress,
 } from "@mui/material";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
 import { Link, useNavigate } from "react-router";
-import profileImg from "../assets/profileImg.png"
+import profileImg from "../assets/profileImg.png";
 // Create a dark theme using Material-UI
 const darkTheme = createTheme({
   palette: {
@@ -72,15 +76,18 @@ const Signup = () => {
       setLoading(true);
       createUserWithEmailAndPassword(auth, values.email, values.password)
         .then((userCredential) => {
-          //username sent 
+          //username sent
           updateProfile(auth.currentUser, {
-            displayName: values.name, photoURL: profileImg
-          }).then(() => {
-            console.log("name sent");
-          }).catch((error) => {
-            console.log("nameErr",error);
-          });
-          
+            displayName: values.name,
+            photoURL: profileImg,
+          })
+            .then(() => {
+              console.log("name sent");
+            })
+            .catch((error) => {
+              console.log("nameErr", error);
+            });
+
           // Signed up
           dispatch({ type: "USER_LOGIN", payload: user });
 
@@ -203,8 +210,8 @@ const Signup = () => {
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
-                  onTouchStart={handleMouseDownConfirmPassword}
-                  onTouchEnd={handleMouseUpConfirmPassword}
+                    onTouchStart={handleMouseDownConfirmPassword}
+                    onTouchEnd={handleMouseUpConfirmPassword}
                     onMouseDown={handleMouseDownConfirmPassword}
                     onMouseUp={handleMouseUpConfirmPassword}
                     onMouseLeave={handleMouseUpConfirmPassword}
