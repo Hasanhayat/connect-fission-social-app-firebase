@@ -21,11 +21,6 @@ form {
   color: #b0bec5;
   font-family: monospace;
 }
-.loader-div {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 .welcome {
   min-height: 100vh;
   display: flex;

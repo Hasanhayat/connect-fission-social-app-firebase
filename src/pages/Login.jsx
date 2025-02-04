@@ -18,7 +18,6 @@ import {
 } from "@mui/material";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./pages.css";
-import Loader from "./Loader";
 import {
   getAuth,
   sendPasswordResetEmail,

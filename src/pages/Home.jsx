@@ -16,6 +16,7 @@ import {
   CssBaseline,
   Alert,
   Snackbar,
+  CircularProgress,
 } from "@mui/material";
 import {
   Send as SendIcon,
@@ -26,7 +27,6 @@ import {
 import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
 import { GlobalContext } from "../context/Context";
 import moment from "moment";
-
 // Custom theme
 const theme = createTheme({
   palette: {
@@ -51,14 +51,17 @@ const Home = () => {
   const [posts, setPosts] = useState([]);
   const { state, dispatch, logout } = useContext(GlobalContext);
   const [newPost, setNewPost] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const getAllData = async () => {
+    setLoading(true);
     setPosts([]);
     const querySnapshot = await getDocs(collection(db, "posts"));
     querySnapshot.forEach((doc) => {
       // console.log(`${doc.id} =>`, doc.data());
       setPosts((prev) => [...prev, doc.data()]);
     });
+    setLoading(false);
   };
   useEffect(() => {
     console.log(state);
@@ -79,7 +82,7 @@ const Home = () => {
         postDate: new Date(),
       });
       setAlertType("success");
-      setAlertMsg("posted");
+      setAlertMsg("UPLOADED SUCCESSFULLY");
       setShowAlert(true);
       getAllData();
       console.log("Document written with ID: ", docRef.id);
@@ -180,74 +183,77 @@ const Home = () => {
             </Box>
           </CardContent>
         </Card>
-
-        <Grid container spacing={4}>
-          {posts.map((post, id) => (
-            <Grid item xs={12} key={id}>
-              <Paper
-                sx={{
-                  p: 3,
-                  borderRadius: 2,
-                  bgcolor: "background.paper",
-                  border: "1px solid #333",
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                  <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>
-                    {post.authorProfile ? (
-                      <img
-                        src={post.authorProfile}
-                        width={40}
-                        height={40}
-                        alt={post.authorName?.charAt(0).toUpperCase()}
-                      />
-                    ) : (
-                      post.authorName?.charAt(0).toUpperCase()
-                    )}
-                  </Avatar>
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    {post.authorName}
-                  </Typography>
-                </Box>
-                <Typography
-                  variant="body1"
-                  sx={{ color: "#B0BEC5", fontWeight: "bold" }}
-                  paragraph
-                >
-                  {post.caption}
-                </Typography>
-                <Box
+        {!loading ? (
+          <Grid container spacing={4}>
+            {posts.map((post, id) => (
+              <Grid item xs={12} key={id}>
+                <Paper
                   sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    p: 3,
+                    borderRadius: 2,
+                    bgcolor: "background.paper",
+                    border: "1px solid #333",
                   }}
                 >
-                  <Typography variant="caption" sx={{ color: "gray" }}>
-                    {moment(post.postDate.toDate()).fromNow()}
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                    <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>
+                      {post.authorProfile ? (
+                        <img
+                          src={post.authorProfile}
+                          width={40}
+                          height={40}
+                          alt={post.authorName?.charAt(0).toUpperCase()}
+                        />
+                      ) : (
+                        post.authorName?.charAt(0).toUpperCase()
+                      )}
+                    </Avatar>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {post.authorName}
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant="body1"
+                    sx={{ color: "#B0BEC5", fontWeight: "bold" }}
+                    paragraph
+                  >
+                    {post.caption}
                   </Typography>
-                  {/* <Typography variant="body2" color="text.secondary">
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Typography variant="caption" sx={{ color: "gray" }}>
+                      {moment(post.postDate.toDate()).fromNow()}
+                    </Typography>
+                    {/* <Typography variant="body2" color="text.secondary">
                     {post.likes} likes
                   </Typography> */}
-                  <Box>
-                    <IconButton
-                      onClick={() => handleLike(post.userId)}
-                      color="primary"
-                    >
-                      <Favorite />
-                    </IconButton>
-                    <IconButton color="primary">
-                      <Comment />
-                    </IconButton>
-                    <IconButton color="primary">
-                      <Share />
-                    </IconButton>
+                    <Box>
+                      <IconButton
+                        onClick={() => handleLike(post.userId)}
+                        color="primary"
+                      >
+                        <Favorite />
+                      </IconButton>
+                      <IconButton color="primary">
+                        <Comment />
+                      </IconButton>
+                      <IconButton color="primary">
+                        <Share />
+                      </IconButton>
+                    </Box>
                   </Box>
-                </Box>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <CircularProgress size={45} color="#B0BEC5" />
+        )}
       </Container>
     </ThemeProvider>
   );
