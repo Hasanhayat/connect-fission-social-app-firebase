@@ -51,6 +51,7 @@ const Home = () => {
   const [newPost, setNewPost] = useState("")
 
   const getAllData = async() => {
+    setPosts([])
     const querySnapshot = await getDocs(collection(db, "posts"));
     querySnapshot.forEach((doc) => {
       // console.log(`${doc.id} =>`, doc.data());
@@ -68,13 +69,6 @@ const Home = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    // if (!newPost.trim()) return
-    // const newPostObj = {
-    //   id: posts.length + 1,
-    //   author: state.user.displayName,
-    //   content: newPost,
-    //   likes: 0,
-    // }
     try {
       const docRef = await addDoc(collection(db, "posts"), {
         userId: state?.user?.uid,
@@ -86,13 +80,11 @@ const Home = () => {
       setAlertType("success");
       setAlertMsg("posted");
       setShowAlert(true);
-      setPosts([])
       getAllData();
       console.log("Document written with ID: ", docRef.id);
     } catch (e) {
       console.error("Error adding document: ", e);
     }
-
     setNewPost("")
   }
 
@@ -108,6 +100,7 @@ const Home = () => {
     setShowAlert(false);
     setAlertMsg("");
   };
+  
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
