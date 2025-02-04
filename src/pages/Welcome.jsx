@@ -4,6 +4,8 @@ import { GlobalContext } from "../context/Context";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { CircularProgress } from "@mui/material";
 import Typed from "typed.js";
+import DemoPosts from "./DemoPosts";
+import "./pages.css";
 
 const Welcome = () => {
   const { state, dispatch, logout } = useContext(GlobalContext);
@@ -42,7 +44,7 @@ const Welcome = () => {
     });
   }, []);
   return (
-    <>
+    <div className="welcome">
       <h1 id="typed">
         {state.isLogin === false ? "Welcome to ConnectFission" : ""}
       </h1>
@@ -69,6 +71,7 @@ const Welcome = () => {
           </button>
         </>
       ) : (
+        <>
         <div className="card">
           <button>
             <Link style={{ textDecoration: "none" }} to={"signup"}>
@@ -82,8 +85,13 @@ const Welcome = () => {
             </Link>
           </button>
         </div>
+        </>
       )}
-    </>
+
+      {(!loading)?<DemoPosts />:null}
+
+      
+    </div>
   );
 };
 
