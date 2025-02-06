@@ -24,7 +24,15 @@ import {
   Comment,
   Share,
 } from "@mui/icons-material";
-import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  onSnapshot,
+} from "firebase/firestore";
 import { GlobalContext } from "../context/Context";
 import moment from "moment";
 // Custom theme
@@ -53,6 +61,9 @@ const Home = () => {
   const [newPost, setNewPost] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const db = getFirestore();
+
+  let unsubscribe;
   const getAllData = async () => {
     setLoading(true);
     setPosts([]);
@@ -63,13 +74,25 @@ const Home = () => {
     });
     setLoading(false);
   };
+
+  const getUpdate = async () => {
+    const q = query(collection(db, "posts"));
+    unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const postsArr = [];
+      querySnapshot.forEach((doc) => {
+        postsArr.push(doc.data());
+        setPosts(postsArr)
+      });
+      console.log("Connection established");
+    });
+  };
   useEffect(() => {
     console.log(state);
     document.title = "Home - ConnectFission";
+    getUpdate()
     getAllData();
+    
   }, []);
-
-  const db = getFirestore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
