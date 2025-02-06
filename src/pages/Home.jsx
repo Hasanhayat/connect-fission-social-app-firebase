@@ -91,7 +91,9 @@ const Home = () => {
     document.title = "Home - ConnectFission";
     getUpdate()
     getAllData();
-    
+    return () => {
+      unsubscribe()
+    };
   }, []);
 
   const handleSubmit = async (e) => {
@@ -107,7 +109,6 @@ const Home = () => {
       setAlertType("success");
       setAlertMsg("UPLOADED SUCCESSFULLY");
       setShowAlert(true);
-      getAllData();
       console.log("Document written with ID: ", docRef.id);
     } catch (e) {
       console.error("Error adding document: ", e);
