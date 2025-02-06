@@ -220,8 +220,9 @@ const Profile = () => {
                       data
                     )
                     .then((result) => {
-                      setProfileImage(result.data.secure_url);
                       console.log(result);
+                      setProfileImage(result.data.secure_url);
+                      handleOpenModal("image");
                     })
                     .catch((err) => {
                       console.log(err);
@@ -317,39 +318,43 @@ const Profile = () => {
           >
             <Typography variant="h6" mb={2}>
               Edit{" "}
-              {editField === "name"
+              {editField === "image"
+                ? "Save Image"
+                : editField === "name"
                 ? "Name"
                 : editField === "password"
                 ? "Password"
                 : "Email"}
             </Typography>
-            <TextField
-              fullWidth
-              type={editField === "password" ? "password" : "text"}
-              value={
-                editField === "name"
-                  ? displayName
-                  : editField === "password"
-                  ? password
-                  : email
-              }
-              onChange={(e) =>
-                editField === "name"
-                  ? setDisplayName(e.target.value)
-                  : editField === "password"
-                  ? setPassword(e.target.value)
-                  : setEmail(e.target.value)
-              }
-              label={
-                editField === "name"
-                  ? "Name"
-                  : editField === "password"
-                  ? "Password"
-                  : "Email"
-              }
-              variant="outlined"
-              margin="normal"
-            />
+            {editField === "image" ? null : (
+              <TextField
+                fullWidth
+                type={editField === "password" ? "password" : "text"}
+                value={
+                  editField === "name"
+                    ? displayName
+                    : editField === "password"
+                    ? password
+                    : email
+                }
+                onChange={(e) =>
+                  editField === "name"
+                    ? setDisplayName(e.target.value)
+                    : editField === "password"
+                    ? setPassword(e.target.value)
+                    : setEmail(e.target.value)
+                }
+                label={
+                  editField === "name"
+                    ? "Name"
+                    : editField === "password"
+                    ? "Password"
+                    : "Email"
+                }
+                variant="outlined"
+                margin="normal"
+              />
+            )}
             <Button
               variant="contained"
               color="primary"
@@ -362,6 +367,8 @@ const Profile = () => {
                   return;
                 }
                 editField === "name"
+                  ? handleUpdateProfile()
+                  :editField === "image"
                   ? handleUpdateProfile()
                   : editField === "password"
                   ? handleUpdatePassword()
