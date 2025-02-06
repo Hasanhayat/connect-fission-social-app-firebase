@@ -221,7 +221,12 @@ const Profile = () => {
                     )
                     .then((result) => {
                       console.log(result);
-                      setProfileImage(result.data.secure_url);
+                      let img = result.data.secure_url;
+                      img = img.replace(
+                        "/upload/",
+                        "/upload/c_thumb,w_200,h_200/"
+                      );
+                      setProfileImage(img);
                       handleOpenModal("image");
                     })
                     .catch((err) => {
@@ -368,7 +373,7 @@ const Profile = () => {
                 }
                 editField === "name"
                   ? handleUpdateProfile()
-                  :editField === "image"
+                  : editField === "image"
                   ? handleUpdateProfile()
                   : editField === "password"
                   ? handleUpdatePassword()
