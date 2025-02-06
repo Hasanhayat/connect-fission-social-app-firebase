@@ -25,6 +25,7 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
 } from "firebase/auth";
+import axios from "axios";
 
 const darkTheme = createTheme({
   palette: {
@@ -38,9 +39,7 @@ const darkTheme = createTheme({
 const Profile = () => {
   const auth = getAuth();
   const user = auth.currentUser;
-  const [profileImage, setProfileImage] = useState(
-    user?.photoURL || "/src/assets/profileImg.png"
-  );
+  const [profileImage, setProfileImage] = useState(user?.photoURL || "");
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [email, setEmail] = useState(user?.email || "");
   const [password, setPassword] = useState("");
@@ -209,13 +208,24 @@ const Profile = () => {
                 hidden
                 accept="image/*"
                 type="file"
-                onChange={(e) => {
+                onChange={async (e) => {
                   const file = e.target.files[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onload = () => setProfileImage(reader.result);
-                    reader.readAsDataURL(file);
-                  }
+                  const data = new FormData();
+                  data.append("file", file);
+                  data.append("upload_preset", "Connectfission-profile");
+                  data.append("cloud_name", "diuztua2d");
+                  await axios
+                    .post(
+                      "https://api.cloudinary.com/v1_1/diuztua2d/image/upload",
+                      data
+                    )
+                    .then((result) => {
+                      setProfileImage(result.data.secure_url);
+                      console.log(result);
+                    })
+                    .catch((err) => {
+                      console.log(err);
+                    });
                 }}
               />
             </IconButton>

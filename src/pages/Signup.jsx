@@ -79,7 +79,7 @@ const Signup = () => {
           //username sent
           updateProfile(auth.currentUser, {
             displayName: values.name,
-            photoURL: profileImg,
+            photoURL: "",
           })
             .then(() => {
               console.log("name sent");

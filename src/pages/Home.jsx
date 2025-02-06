@@ -32,6 +32,7 @@ import {
   query,
   where,
   onSnapshot,
+  orderBy,
 } from "firebase/firestore";
 import { GlobalContext } from "../context/Context";
 import moment from "moment";
@@ -64,24 +65,16 @@ const Home = () => {
   const db = getFirestore();
 
   let unsubscribe;
-  const getAllData = async () => {
-    setLoading(true);
-    setPosts([]);
-    const querySnapshot = await getDocs(collection(db, "posts"));
-    querySnapshot.forEach((doc) => {
-      // console.log(`${doc.id} =>`, doc.data());
-      setPosts((prev) => [...prev, doc.data()]);
-    });
-    setLoading(false);
-  };
-
+  
   const getUpdate = async () => {
-    const q = query(collection(db, "posts"));
+    setLoading(true)
+    const q = query(collection(db, "posts"), orderBy('postDate', 'desc'));
     unsubscribe = onSnapshot(q, (querySnapshot) => {
       const postsArr = [];
       querySnapshot.forEach((doc) => {
         postsArr.push(doc.data());
         setPosts(postsArr)
+        setLoading(false)
       });
       console.log("Connection established");
     });
@@ -90,8 +83,8 @@ const Home = () => {
     console.log(state);
     document.title = "Home - ConnectFission";
     getUpdate()
-    getAllData();
     return () => {
+      console.log("db disconnected");
       unsubscribe()
     };
   }, []);
@@ -284,3 +277,17 @@ const Home = () => {
 };
 
 export default Home;
+
+
+
+
+// const getAllData = async () => {
+  //   setLoading(true);
+  //   setPosts([]);
+  //   const querySnapshot = await getDocs(collection(db, "posts"));
+  //   querySnapshot.forEach((doc) => {
+  //     // console.log(`${doc.id} =>`, doc.data());
+  //     // setPosts((prev) => [...prev, doc.data()]);
+  //   });
+  //   setLoading(false);
+  // };
