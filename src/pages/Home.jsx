@@ -37,6 +37,7 @@ import {
 import { GlobalContext } from "../context/Context";
 import moment from "moment";
 import axios from "axios";
+import { Link } from "react-router";
 
 // Custom theme
 const theme = createTheme({
@@ -78,7 +79,7 @@ const Home = () => {
     unsubscribe = onSnapshot(q, (querySnapshot) => {
       const postsArr = [];
       querySnapshot.forEach((doc) => {
-        postsArr.push(doc.data());
+        postsArr.push({...doc.data() , id: doc.id})
       });
       setPosts(postsArr);
       setLoading(false);
@@ -174,10 +175,13 @@ const Home = () => {
         >
           ConnectFission
         </Typography>
+        
 
         <Card sx={{ mb: 4, borderRadius: 2, bgcolor: "background.paper" }}>
           <CardContent>
             <Box sx={{ display: "flex", alignItems: "flex-start", mb: 2 }}>
+            <Link to={"/profile"}>
+
               <Avatar sx={{ mr: 2, bgcolor: "secondary.main" }}>
                 {state.user.photoURL ? (
                   <img
@@ -190,6 +194,7 @@ const Home = () => {
                   state.user?.displayName.charAt(0).toUpperCase()
                 )}
               </Avatar>
+              </Link>
               <form onSubmit={handleSubmit} style={{ width: "100%" }}>
                 <TextField
                   fullWidth

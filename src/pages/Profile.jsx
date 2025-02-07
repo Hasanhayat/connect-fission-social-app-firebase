@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -13,8 +13,11 @@ import {
   createTheme,
   Snackbar,
   Alert,
+  CircularProgress,
+  Grid,
+  Paper,
 } from "@mui/material";
-import { Edit, Verified } from "@mui/icons-material";
+import { Comment, Edit, Favorite, Share, Verified } from "@mui/icons-material";
 import {
   getAuth,
   sendEmailVerification,
@@ -26,6 +29,15 @@ import {
   reauthenticateWithCredential,
 } from "firebase/auth";
 import axios from "axios";
+import {
+  collection,
+  getFirestore,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
+import moment from "moment";
 
 const darkTheme = createTheme({
   palette: {
@@ -52,6 +64,34 @@ const Profile = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState("");
   const [alertType, setAlertType] = useState("success");
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const db = getFirestore();
+
+  let unsubscribe;
+  const getUpdate = async () => {
+    setLoading(true);
+    const q = query(collection(db, "posts"), where("userId", "==", user.uid));
+    unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const postsArr = [];
+      querySnapshot.forEach((doc) => {
+        postsArr.push({ ...doc.data(), id: doc.id });
+      });
+      setPosts(postsArr);
+      setLoading(false);
+      console.log("Connection established");
+    });
+  };
+  useEffect(() => {
+    document.title = `${user.displayName} - Profile`;
+
+    getUpdate();
+
+    return () => {
+      console.log("db disconnected");
+      unsubscribe();
+    };
+  }, []);
 
   const alertClose = () => {
     setShowAlert(false);
@@ -386,6 +426,82 @@ const Profile = () => {
           </Box>
         </Modal>
       </Box>
+      {!loading ? (
+        <Grid container spacing={4}>
+          {posts.map((post, id) => (
+            <Grid item xs={12} key={id}>
+              <Paper
+                sx={{
+                  p: 3,
+                  m: 3,
+                  borderRadius: 2,
+                  bgcolor: "background.paper",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>
+                    {post.authorProfile ? (
+                      <img
+                        src={post.authorProfile}
+                        width={40}
+                        height={40}
+                        alt={post.authorName?.charAt(0).toUpperCase()}
+                      />
+                    ) : (
+                      post.authorName?.charAt(0).toUpperCase()
+                    )}
+                  </Avatar>
+                  <Typography variant="subtitle1" fontWeight="bold">
+                    {post.authorName}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant="body1"
+                  sx={{ color: "#B0BEC5", fontWeight: "bold" }}
+                  paragraph
+                >
+                  {post.caption}
+                </Typography>
+                {post.imageUrl && (
+                  <Box sx={{ my: 2 }}>
+                    <img
+                      src={post.imageUrl}
+                      alt="Post"
+                      style={{ width: "60%", borderRadius: "10px" }}
+                    />
+                  </Box>
+                )}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="caption" sx={{ color: "gray" }}>
+                    {moment(post.postDate.toDate()).fromNow()}
+                  </Typography>
+                  <Box>
+                    <IconButton color="primary">
+                      <Favorite />
+                    </IconButton>
+                    <IconButton color="primary">
+                      <Comment />
+                    </IconButton>
+                    <IconButton color="primary">
+                      <Share />
+                    </IconButton>
+                  </Box>
+                </Box>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          <CircularProgress size={45} color="primary" />
+        </Box>
+      )}
     </ThemeProvider>
   );
 };

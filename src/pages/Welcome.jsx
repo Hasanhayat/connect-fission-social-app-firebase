@@ -55,12 +55,12 @@ const Welcome = () => {
         <>
           <div className="card">
             <button>
-              <Link style={{ textDecoration: "none" }} to={"home"}>
+              <Link style={{ textDecoration: "none" }} to={"/home"}>
                 Home
               </Link>
             </button>
             <button>
-              <Link style={{ textDecoration: "none" }} to={"profile"}>
+              <Link style={{ textDecoration: "none" }} to={"/profile"}>
                 Profile
               </Link>
             </button>
