@@ -23,19 +23,21 @@ import {
   Favorite,
   Comment,
   Share,
+  Image as ImageIcon,
 } from "@mui/icons-material";
 import {
   getFirestore,
   collection,
   addDoc,
-  getDocs,
-  query,
-  where,
   onSnapshot,
+  query,
   orderBy,
+  Timestamp,
 } from "firebase/firestore";
 import { GlobalContext } from "../context/Context";
 import moment from "moment";
+import axios from "axios";
+
 // Custom theme
 const theme = createTheme({
   palette: {
@@ -58,64 +60,86 @@ const theme = createTheme({
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
-  const { state, dispatch, logout } = useContext(GlobalContext);
+  const { state } = useContext(GlobalContext);
   const [newPost, setNewPost] = useState("");
   const [loading, setLoading] = useState(false);
+  const [image, setImage] = useState(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMsg, setAlertMsg] = useState("");
+  const [alertType, setAlertType] = useState("");
 
   const db = getFirestore();
 
   let unsubscribe;
-  
+
   const getUpdate = async () => {
-    setLoading(true)
-    const q = query(collection(db, "posts"), orderBy('postDate', 'desc'));
+    setLoading(true);
+    const q = query(collection(db, "posts"), orderBy("postDate", "desc"));
     unsubscribe = onSnapshot(q, (querySnapshot) => {
       const postsArr = [];
       querySnapshot.forEach((doc) => {
         postsArr.push(doc.data());
-        setPosts(postsArr)
-        setLoading(false)
       });
+      setPosts(postsArr);
+      setLoading(false);
       console.log("Connection established");
     });
   };
+
   useEffect(() => {
-    console.log(state);
     document.title = "Home - ConnectFission";
-    getUpdate()
+    getUpdate();
     return () => {
       console.log("db disconnected");
-      unsubscribe()
+      unsubscribe();
     };
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
+    let imageUrl = "";
+    if (image) {
+      const data = new FormData();
+      data.append("file", image);
+      data.append("upload_preset", "Connectfission-posts");
+      data.append("cloud_name", "diuztua2d");
+
+      try {
+        const res = await axios.post(
+          "https://api.cloudinary.com/v1_1/diuztua2d/image/upload",
+          data
+        );
+        imageUrl = res.data.url;
+      } catch (error) {
+        console.error("Error uploading image:", error);
+      }
+    }
+
     try {
-      const docRef = await addDoc(collection(db, "posts"), {
+      await addDoc(collection(db, "posts"), {
         userId: state?.user?.uid,
         caption: newPost,
+        imageUrl: imageUrl,
         authorName: state?.user?.displayName,
         authorProfile: state?.user?.photoURL,
-        postDate: new Date(),
+        postDate: Timestamp.now(),
       });
       setAlertType("success");
-      setAlertMsg("UPLOADED SUCCESSFULLY");
+      setAlertMsg("Post uploaded successfully!");
       setShowAlert(true);
-      console.log("Document written with ID: ", docRef.id);
     } catch (e) {
       console.error("Error adding document: ", e);
+      setAlertType("error");
+      setAlertMsg("Failed to upload post");
+      setShowAlert(true);
     }
+
     setNewPost("");
+    setImage(null);
+    setLoading(false);
   };
-
-  // const handleLike = (id) => {
-  //   setPosts(posts.map((post) => (post.id === id ? { ...post, likes: post.likes + 1 } : post)))
-  // }
-
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMsg, setAlertMsg] = useState(false);
-  const [alertType, setAlertType] = useState("");
 
   const alertClose = () => {
     setShowAlert(false);
@@ -129,11 +153,7 @@ const Home = () => {
         open={showAlert}
         autoHideDuration={2000}
         onClose={alertClose}
-        anchorOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
-        message="Added successfully"
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           onClose={alertClose}
@@ -144,6 +164,7 @@ const Home = () => {
           {alertMsg}
         </Alert>
       </Snackbar>
+
       <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
         <Typography
           variant="h4"
@@ -156,14 +177,7 @@ const Home = () => {
 
         <Card sx={{ mb: 4, borderRadius: 2, bgcolor: "background.paper" }}>
           <CardContent>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "flex-start",
-                mb: 2,
-                border: "1px solid #333",
-              }}
-            >
+            <Box sx={{ display: "flex", alignItems: "flex-start", mb: 2 }}>
               <Avatar sx={{ mr: 2, bgcolor: "secondary.main" }}>
                 {state.user.photoURL ? (
                   <img
@@ -187,31 +201,42 @@ const Home = () => {
                   onChange={(e) => setNewPost(e.target.value)}
                   sx={{ mb: 2 }}
                 />
+                <Box sx={{ display: "flex" }}>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={<ImageIcon />}
+                  sx={{ mr: 2 }}
+                >
+                  Upload Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => setImage(e.target.files[0])}
+                  />
+                </Button>
                 <Button
                   type="submit"
                   variant="contained"
                   color="primary"
                   endIcon={<SendIcon />}
-                  disabled={!newPost.trim()}
+                  disabled={!newPost.trim() && !image}
                 >
                   Post
                 </Button>
+                  </Box>
+               
               </form>
             </Box>
           </CardContent>
         </Card>
+
         {!loading ? (
           <Grid container spacing={4}>
             {posts.map((post, id) => (
               <Grid item xs={12} key={id}>
-                <Paper
-                  sx={{
-                    p: 3,
-                    borderRadius: 2,
-                    bgcolor: "background.paper",
-                    border: "1px solid #333",
-                  }}
-                >
+                <Paper sx={{ p: 3, borderRadius: 2, bgcolor: "background.paper" }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                     <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>
                       {post.authorProfile ? (
@@ -236,24 +261,21 @@ const Home = () => {
                   >
                     {post.caption}
                   </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
+                  {post.imageUrl && (
+                    <Box sx={{ my: 2 }}>
+                      <img
+                        src={post.imageUrl}
+                        alt="Post"
+                        style={{ width: "60%", borderRadius: "10px" }}
+                      />
+                    </Box>
+                  )}
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Typography variant="caption" sx={{ color: "gray" }}>
                       {moment(post.postDate.toDate()).fromNow()}
                     </Typography>
-                    {/* <Typography variant="body2" color="text.secondary">
-                    {post.likes} likes
-                  </Typography> */}
                     <Box>
-                      <IconButton
-                        onClick={() => handleLike(post.userId)}
-                        color="primary"
-                      >
+                      <IconButton color="primary">
                         <Favorite />
                       </IconButton>
                       <IconButton color="primary">
@@ -269,7 +291,9 @@ const Home = () => {
             ))}
           </Grid>
         ) : (
-          <CircularProgress size={45} color="#B0BEC5" />
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            <CircularProgress size={45} color="primary" />
+          </Box>
         )}
       </Container>
     </ThemeProvider>
@@ -277,17 +301,3 @@ const Home = () => {
 };
 
 export default Home;
-
-
-
-
-// const getAllData = async () => {
-  //   setLoading(true);
-  //   setPosts([]);
-  //   const querySnapshot = await getDocs(collection(db, "posts"));
-  //   querySnapshot.forEach((doc) => {
-  //     // console.log(`${doc.id} =>`, doc.data());
-  //     // setPosts((prev) => [...prev, doc.data()]);
-  //   });
-  //   setLoading(false);
-  // };
