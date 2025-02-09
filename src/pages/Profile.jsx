@@ -16,8 +16,17 @@ import {
   CircularProgress,
   Grid,
   Paper,
+  Menu,
+  MenuItem,
 } from "@mui/material";
-import { Comment, Edit, Favorite, Share, Verified } from "@mui/icons-material";
+import {
+  Comment,
+  Edit,
+  Favorite,
+  MoreVert,
+  Share,
+  Verified,
+} from "@mui/icons-material";
 import {
   getAuth,
   sendEmailVerification,
@@ -31,20 +40,29 @@ import {
 import axios from "axios";
 import {
   collection,
+  deleteDoc,
+  doc,
   getFirestore,
   onSnapshot,
-  orderBy,
   query,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import moment from "moment";
+import Swal from "sweetalert2";
 
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
-    primary: { main: "#90caf9" },
-    background: { default: "#121212", paper: "#1e1e1e" },
-    text: { primary: "#ffffff", secondary: "#b0bec5" },
+    primary: { main: "#00bcd4" },
+    secondary: { main: "#ff4081" },
+    background: { default: "#0d1117", paper: "#161b22" },
+    text: { primary: "#e6edf3", secondary: "#8b949e" },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    h5: { fontWeight: 600 },
+    body1: { fontSize: "1rem" },
   },
 });
 
@@ -60,12 +78,15 @@ const Profile = () => {
   );
   const [openModal, setOpenModal] = useState(false);
   const [editField, setEditField] = useState("");
-
   const [showAlert, setShowAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState("");
   const [alertType, setAlertType] = useState("success");
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [currentCaption, setCurrentCaption] = useState("");
+
   const db = getFirestore();
 
   let unsubscribe;
@@ -79,36 +100,70 @@ const Profile = () => {
       });
       setPosts(postsArr);
       setLoading(false);
-      console.log("Connection established");
     });
   };
+
   useEffect(() => {
     document.title = `${user.displayName} - Profile`;
-
     getUpdate();
-
     return () => {
-      console.log("db disconnected");
       unsubscribe();
     };
   }, []);
 
-  const alertClose = () => {
-    setShowAlert(false);
-  };
-
-  // Modal Handler
+  const alertClose = () => setShowAlert(false);
   const handleOpenModal = (field) => {
+    if (field === "post") {
+      handleMenuClose();
+      setCurrentCaption(selectedPost.caption);
+    }
     setEditField(field);
     setOpenModal(true);
   };
-
   const handleCloseModal = () => {
     setEditField("");
     setOpenModal(false);
   };
 
-  // Update Profile
+  const handleMenuOpen = (event, post) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedPost(post);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const deletePost = () => {
+    handleMenuClose();
+    Swal.fire({
+      title: "Do you want delete this post?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Delete",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const del = async () => {
+          await deleteDoc(doc(db, "posts", selectedPost.id));
+          setSelectedPost(null);
+        };
+        del();
+        // Swal.fire("deleted!", "", "success");
+      }
+    });
+  };
+  const editPost = async () => {
+    handleMenuClose();
+    await updateDoc(doc(db, "posts", selectedPost.id), {
+      caption: currentCaption,
+    });
+    setCurrentCaption("");
+    setSelectedPost(null);
+    setAlertMsg("Post updated successfully");
+    setAlertType("success");
+    setShowAlert(true);
+  };
+
   const handleUpdateProfile = () => {
     updateProfile(auth.currentUser, { displayName, photoURL: profileImage })
       .then(() => {
@@ -123,7 +178,6 @@ const Profile = () => {
       });
   };
 
-  // Update Password
   const handleUpdatePassword = () => {
     if (password.length < 8) {
       setAlertMsg("Password must be at least 8 characters long");
@@ -133,11 +187,8 @@ const Profile = () => {
     }
 
     const credential = EmailAuthProvider.credential(user.email, password);
-
     reauthenticateWithCredential(user, credential)
-      .then(() => {
-        return updatePassword(user, password);
-      })
+      .then(() => updatePassword(user, password))
       .then(() => {
         setAlertMsg("Password updated successfully");
         setAlertType("success");
@@ -150,7 +201,6 @@ const Profile = () => {
       });
   };
 
-  // Update Email
   const handleUpdateEmail = () => {
     updateEmail(auth.currentUser, email)
       .then(() => {
@@ -165,7 +215,6 @@ const Profile = () => {
       });
   };
 
-  // Send Email Verification
   const handleSendVerification = () => {
     sendEmailVerification(auth.currentUser)
       .then(() => {
@@ -180,7 +229,6 @@ const Profile = () => {
       });
   };
 
-  // Delete Account
   const handleDeleteAccount = () => {
     deleteUser(auth.currentUser)
       .then(() => {
@@ -195,18 +243,13 @@ const Profile = () => {
       });
   };
 
-  const emailParts = email.split("@");
-
   return (
     <ThemeProvider theme={darkTheme}>
       <Snackbar
         open={showAlert}
         autoHideDuration={2000}
         onClose={alertClose}
-        anchorOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           onClose={alertClose}
@@ -221,26 +264,36 @@ const Profile = () => {
       <Box
         sx={{
           maxWidth: 500,
-          width: 350,
           mx: "auto",
           mt: 4,
-          p: 3,
-          boxShadow: 3,
-          borderRadius: 2,
-          backgroundColor: "background.paper",
+          p: 4,
+          boxShadow: 5,
+          borderRadius: 4,
+          bgcolor: "background.paper",
         }}
       >
-        <Typography variant="h5" align="center" mb={3}>
+        <Typography variant="h5" align="center" gutterBottom>
           Profile
         </Typography>
-        <Box display="flex" justifyContent="center" mb={3}>
+        <Box display="flex" justifyContent="center" mb={3} position="relative">
           <Avatar
             src={profileImage}
-            sx={{ width: 80, height: 80, bgcolor: "primary.main" }}
+            sx={{
+              width: 100,
+              height: 100,
+              border: "3px solid",
+              borderColor: "primary.main",
+            }}
           />
           <Tooltip title="Edit Profile Picture">
             <IconButton
-              sx={{ position: "absolute", mt: 6, ml: -2 }}
+              sx={{
+                position: "absolute",
+                bottom: 0,
+                right: "calc(50% - 50px)",
+                bgcolor: "primary.main",
+                color: "#fff",
+              }}
               component="label"
             >
               <Edit />
@@ -254,92 +307,68 @@ const Profile = () => {
                   data.append("file", file);
                   data.append("upload_preset", "Connectfission-profile");
                   data.append("cloud_name", "diuztua2d");
-                  await axios
-                    .post(
+                  try {
+                    const result = await axios.post(
                       "https://api.cloudinary.com/v1_1/diuztua2d/image/upload",
                       data
-                    )
-                    .then((result) => {
-                      console.log(result);
-                      let img = result.data.secure_url;
-                      img = img.replace(
-                        "/upload/",
-                        "/upload/c_thumb,w_200,h_200/"
-                      );
-                      setProfileImage(img);
-                      handleOpenModal("image");
-                    })
-                    .catch((err) => {
-                      console.log(err);
-                    });
+                    );
+                    const img = result.data.secure_url.replace(
+                      "/upload/",
+                      "/upload/c_thumb,w_200,h_200/"
+                    );
+                    setProfileImage(img);
+                    handleOpenModal("image");
+                  } catch (err) {
+                    console.log(err);
+                  }
                 }}
               />
             </IconButton>
           </Tooltip>
         </Box>
 
-        {/* Profile Info */}
-        <Box
-          display="flex"
-          alignItems="center"
-          mb={2}
-          sx={{ borderBottom: "1px solid #ccc", pb: 1 }}
-        >
+        {["Name", "Email", "Password"].map((field, index) => (
+          <Box
+            key={index}
+            display="flex"
+            alignItems="center"
+            mb={2}
+            sx={{ borderBottom: "1px solid #333", pb: 1 }}
+          >
+            <Typography variant="body1" sx={{ flexGrow: 1 }}>
+              <b>{field}:</b>{" "}
+              {field === "Password"
+                ? "●●●●●●●●●"
+                : field === "Name"
+                ? displayName || "Not set"
+                : email}
+            </Typography>
+            <IconButton onClick={() => handleOpenModal(field.toLowerCase())}>
+              <Edit />
+            </IconButton>
+          </Box>
+        ))}
+
+        <Box display="flex" alignItems="center" mb={2}>
           <Typography variant="body1" sx={{ flexGrow: 1 }}>
-            <b>Name:</b> {displayName || "Not set"}
+            {isEmailVerified ? <b>Email Verified</b> : <b>Not Verified</b>}
           </Typography>
-          <IconButton onClick={() => handleOpenModal("name")}>
-            <Edit />
-          </IconButton>
-        </Box>
-        <Box
-          display="flex"
-          alignItems="center"
-          mb={2}
-          sx={{ borderBottom: "1px solid #ccc", pb: 1 }}
-        >
-          <Typography variant="body1" sx={{ flexGrow: 1 }}>
-            <b>Email:</b>
-            <span style={{ whiteSpace: "pre-wrap" }}>
-              {emailParts[0]}
-              <br />@{emailParts[1]}
-            </span>
-          </Typography>
+          {isEmailVerified && <Verified color="success" />}
           {!isEmailVerified && (
             <Button
               size="small"
               variant="contained"
               color="primary"
               onClick={handleSendVerification}
+              sx={{ ml: 2 }}
             >
               Verify
             </Button>
           )}
-          <IconButton onClick={() => handleOpenModal("email")}>
-            <Edit />
-          </IconButton>
         </Box>
-        <Box
-          display="flex"
-          alignItems="center"
-          mb={2}
-          sx={{ borderBottom: "1px solid #ccc", pb: 1 }}
-        >
-          <Typography variant="body1" sx={{ flexGrow: 1 }}>
-            <b>Password:</b> ●●●●●●●●●
-          </Typography>
-          <IconButton onClick={() => handleOpenModal("password")}>
-            <Edit />
-          </IconButton>
-        </Box>
-        <Box display="flex" alignItems="center" mb={2}>
-          <Typography variant="body1" sx={{ flexGrow: 1 }}>
-            {isEmailVerified ? <b>Email Verified</b> : <b>not verified</b>}
-          </Typography>
-          {isEmailVerified && <Verified color="success" />}
-        </Box>
+
         <Button
-          variant="outlined"
+          variant="contained"
           color="error"
           fullWidth
           onClick={handleDeleteAccount}
@@ -348,7 +377,6 @@ const Profile = () => {
           Delete Account
         </Button>
 
-        {/* Modal for Editing */}
         <Modal open={openModal} onClose={handleCloseModal}>
           <Box
             sx={{
@@ -358,44 +386,40 @@ const Profile = () => {
               p: 3,
               bgcolor: "background.paper",
               boxShadow: 24,
-              borderRadius: 2,
+              borderRadius: 3,
             }}
           >
-            <Typography variant="h6" mb={2}>
-              Edit{" "}
+            <Typography variant="h6" gutterBottom>
               {editField === "image"
                 ? "Save Image"
-                : editField === "name"
-                ? "Name"
-                : editField === "password"
-                ? "Password"
-                : "Email"}
+                : editField === "post"
+                ? "Edit post"
+                : `Edit ${
+                    editField.charAt(0).toUpperCase() + editField.slice(1)
+                  }`}
             </Typography>
-            {editField === "image" ? null : (
+            {editField !== "image" && (
               <TextField
                 fullWidth
                 type={editField === "password" ? "password" : "text"}
                 value={
                   editField === "name"
                     ? displayName
+                    : editField === "post"
+                    ? currentCaption
                     : editField === "password"
                     ? password
                     : email
                 }
-                onChange={(e) =>
-                  editField === "name"
-                    ? setDisplayName(e.target.value)
-                    : editField === "password"
-                    ? setPassword(e.target.value)
-                    : setEmail(e.target.value)
-                }
-                label={
-                  editField === "name"
-                    ? "Name"
-                    : editField === "password"
-                    ? "Password"
-                    : "Email"
-                }
+                onChange={(e) => {
+                  if (editField === "name") setDisplayName(e.target.value);
+                  else if (editField === "password")
+                    setPassword(e.target.value);
+                  else if (editField === "post")
+                    setCurrentCaption(e.target.value);
+                  else setEmail(e.target.value);
+                }}
+                label={editField.charAt(0).toUpperCase() + editField.slice(1)}
                 variant="outlined"
                 margin="normal"
               />
@@ -411,53 +435,81 @@ const Profile = () => {
                   setShowAlert(true);
                   return;
                 }
-                editField === "name"
-                  ? handleUpdateProfile()
-                  : editField === "image"
-                  ? handleUpdateProfile()
-                  : editField === "password"
-                  ? handleUpdatePassword()
-                  : handleUpdateEmail();
+                if (editField === "name" || editField === "image")
+                  handleUpdateProfile();
+                else if (editField === "password") handleUpdatePassword();
+                else if (editField === "post") editPost();
+                else handleUpdateEmail();
                 handleCloseModal();
               }}
+              sx={{ mt: 2 }}
             >
               Save
             </Button>
           </Box>
         </Modal>
       </Box>
+
       {!loading ? (
-        <Grid container spacing={4}>
+        <Grid container spacing={3} justifyContent="center" sx={{ mt: 4 }}>
           {posts.map((post, id) => (
-            <Grid item xs={12} key={id}>
+            <Grid item xs={12} md={6} key={id}>
               <Paper
                 sx={{
                   p: 3,
-                  m: 3,
-                  borderRadius: 2,
+                  borderRadius: 4,
                   bgcolor: "background.paper",
+                  boxShadow: 5,
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                  <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>
-                    {post.authorProfile ? (
-                      <img
-                        src={post.authorProfile}
-                        width={40}
-                        height={40}
-                        alt={post.authorName?.charAt(0).toUpperCase()}
-                      />
-                    ) : (
-                      post.authorName?.charAt(0).toUpperCase()
-                    )}
-                  </Avatar>
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    {post.authorName}
-                  </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 2,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>
+                      {post.authorProfile ? (
+                        <img
+                          src={post.authorProfile}
+                          width={40}
+                          height={40}
+                          alt={post.authorName?.charAt(0).toUpperCase()}
+                        />
+                      ) : (
+                        post.authorName?.charAt(0).toUpperCase()
+                      )}
+                    </Avatar>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {post.authorName}
+                    </Typography>
+                  </Box>
+                  <IconButton onClick={(e) => handleMenuOpen(e, post)}>
+                    <MoreVert />
+                  </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl && selectedPost?.id === post.id)}
+                    onClose={handleMenuClose}
+                    anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                    transformOrigin={{ vertical: "top", horizontal: "right" }}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        handleOpenModal("post");
+                      }}
+                    >
+                      Edit Post
+                    </MenuItem>
+                    <MenuItem onClick={deletePost}>Delete Post</MenuItem>
+                  </Menu>
                 </Box>
                 <Typography
                   variant="body1"
-                  sx={{ color: "#B0BEC5", fontWeight: "bold" }}
+                  sx={{ color: "text.secondary", fontWeight: "bold" }}
                   paragraph
                 >
                   {post.caption}
@@ -467,7 +519,7 @@ const Profile = () => {
                     <img
                       src={post.imageUrl}
                       alt="Post"
-                      style={{ width: "60%", borderRadius: "10px" }}
+                      style={{ width: "100%", borderRadius: "10px" }}
                     />
                   </Box>
                 )}
@@ -478,7 +530,10 @@ const Profile = () => {
                     alignItems: "center",
                   }}
                 >
-                  <Typography variant="caption" sx={{ color: "gray" }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "text.secondary" }}
+                  >
                     {moment(post.postDate.toDate()).fromNow()}
                   </Typography>
                   <Box>
@@ -499,7 +554,7 @@ const Profile = () => {
         </Grid>
       ) : (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-          <CircularProgress size={45} color="primary" />
+          <CircularProgress size={50} color="primary" />
         </Box>
       )}
     </ThemeProvider>
