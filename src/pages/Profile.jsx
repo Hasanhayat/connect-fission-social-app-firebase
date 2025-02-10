@@ -146,6 +146,9 @@ const Profile = () => {
         const del = async () => {
           await deleteDoc(doc(db, "posts", selectedPost.id));
           setSelectedPost(null);
+          setAlertMsg("Post deleted successfully");
+          setAlertType("success");
+          setShowAlert(true);
         };
         del();
         // Swal.fire("deleted!", "", "success");
