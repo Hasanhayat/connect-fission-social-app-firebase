@@ -6,6 +6,7 @@ import { CircularProgress } from "@mui/material";
 import Typed from "typed.js";
 import DemoPosts from "./DemoPosts";
 import "./pages.css";
+import Nav from "./Nav";
 
 const Welcome = () => {
   const { state, dispatch, logout } = useContext(GlobalContext);
@@ -45,6 +46,7 @@ const Welcome = () => {
   }, []);
   return (
     <div className="welcome">
+      <Nav />
       <h1 id="typed">
         {state.isLogin === false ? "Welcome to ConnectFission" : ""}
       </h1>
