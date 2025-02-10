@@ -46,7 +46,6 @@ const Welcome = () => {
   }, []);
   return (
     <div className="welcome">
-      <Nav />
       <h1 id="typed">
         {state.isLogin === false ? "Welcome to ConnectFission" : ""}
       </h1>

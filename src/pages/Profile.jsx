@@ -54,9 +54,9 @@ import Swal from "sweetalert2";
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
-    primary: { main: "#00bcd4" },
-    secondary: { main: "#ff4081" },
-    background: { default: "#0d1117", paper: "#161b22" },
+    primary: { main: "#90caf9" },
+    secondary: { main: "#f48fb1" },
+    background: { default: "#121212", paper: "#1e1e1e" },
     text: { primary: "#e6edf3", secondary: "#8b949e" },
   },
   typography: {

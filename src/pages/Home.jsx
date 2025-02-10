@@ -271,8 +271,8 @@ const Home = () => {
                       <img
                         src={post.imageUrl}
                         alt="Post"
-                        style={{ width: "60%", borderRadius: "10px" }}
-                      />
+                        style={{ width: "100%", maxWidth: "400px", borderRadius: "10px" }}
+                        />
                     </Box>
                   )}
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

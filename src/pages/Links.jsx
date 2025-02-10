@@ -6,17 +6,21 @@ import Welcome from "./Welcome";
 import Home from "./Home";
 import { GlobalContext } from "../context/Context";
 import Profile from "./Profile";
+import Nav from "./Nav";
 
 const Links = () => {
   const { state, dispatch, logout } = useContext(GlobalContext);
 
   return state.isLogin ? (
+    <>
+    <Nav />
     <Routes>
       <Route path="/" element={<Welcome />} />
       <Route path="/home" element={<Home />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="*" element={<Navigate to={"/"} />} />
     </Routes>
+    </>
   ) : (
     <Routes>
       <Route path="/" element={<Welcome />} />
