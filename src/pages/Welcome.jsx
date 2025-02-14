@@ -7,6 +7,7 @@ import Typed from "typed.js";
 import DemoPosts from "./DemoPosts";
 import "./pages.css";
 import Nav from "./Nav";
+import TechLogos from "./TechLogos";
 
 const Welcome = () => {
   const { state, dispatch, logout } = useContext(GlobalContext);
@@ -29,7 +30,7 @@ const Welcome = () => {
     setLoading(true);
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log("user", user);
+        // console.log("user", user);
         dispatch({ type: "USER_LOGIN", payload: user });
         const uid = user.uid;
         setLoading(false);
@@ -89,7 +90,11 @@ const Welcome = () => {
         </>
       )}
 
-      {!loading ? <DemoPosts /> : null}
+      {!loading ? (
+        <>
+          <TechLogos /> <DemoPosts />{" "}
+        </>
+      ) : null}
     </div>
   );
 };

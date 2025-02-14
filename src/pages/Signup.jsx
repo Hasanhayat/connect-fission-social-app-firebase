@@ -20,7 +20,6 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { Link, useNavigate } from "react-router";
-import profileImg from "../assets/profileImg.png";
 // Create a dark theme using Material-UI
 const darkTheme = createTheme({
   palette: {
