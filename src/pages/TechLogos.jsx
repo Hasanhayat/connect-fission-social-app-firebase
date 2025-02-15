@@ -12,14 +12,16 @@ import muiLogo from "../assets/mui.svg";
 import axiosLogo from "../assets/axios.svg";
 
 const logos = [
+  googleLogo,
   firebaseLogo,
-  gitLogo,
+  reactLogo,
   githubLogo,
   facebookLogo,
-  googleLogo,
-  reactLogo,
-  muiLogo,
   axiosLogo,
+  muiLogo,
+  gitLogo,
+
+  
 ];
 
 const TechLogos = () => {
@@ -27,11 +29,11 @@ const TechLogos = () => {
     <div className="logo-container">
       <motion.div
         className="logo-track"
-        initial={{ x: "100%" }}
+        initial={{ x: "65%" }}
         animate={{ x: "-100%" }}
-        transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+        transition={{ repeat: Infinity, duration: 15, ease: "linear" }}
       >
-        {[...logos, ...logos].map((logo, index) => (
+        {[...logos].map((logo, index) => (
           <img key={index} src={logo} alt="tech-logo" className="logo" />
         ))}
       </motion.div>
